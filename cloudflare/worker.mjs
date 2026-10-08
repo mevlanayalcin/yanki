@@ -271,6 +271,8 @@ export default {
     if (yol === "/api/reflect") return handleReflect(request, env);
     if (yol === "/api/waitlist") return handleWaitlist(request, env);
     if (yol === "/api/health") return json({ ok: true, model: MODEL, butce: BUTCE_BIRIM, krizSozcuk: KRIZ.length });
+    const hedef = YONLENDIRME[yol];
+    if (hedef) return Response.redirect(new URL(hedef, request.url), 301);
     return env.ASSETS.fetch(request);
   },
 };
