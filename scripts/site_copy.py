@@ -1,7 +1,7 @@
 """Public-facing copy for the consulting site, in English and Turkish.
 
-All values are plain text. Product status and legal identity are intentionally
-separate: a working product does not imply an incorporated company.
+All values are plain text. Business registration, domain ownership and product
+development dates are kept separate.
 """
 
 COPY = {
@@ -75,8 +75,8 @@ COPY = {
                 {"label": "Focus", "value": "AI consulting & product engineering"},
                 {"label": "Our product", "value": "Yankı · live beta"},
             ],
-            "legal": "Mevlana Yalçın is the name of this independent practice. It is not currently a separately incorporated legal entity. Enquiries and engagement terms are handled directly by the founder.",
-            "dates": "The founder has held mevlanayalcin.com.tr since September 2023. The consulting offer on this site and product work on Yankı began in October 2026. The domain date is not an incorporation date.",
+            "legal": "Mevlana Yalçın operates this AI consulting and product development business. Enquiries and engagement terms are handled directly by the founder.",
+            "dates": "The business was registered in November 2023. The founder has held mevlanayalcin.com.tr since September 2023. Product work on Yankı began in October 2026.",
             "model_use": "Yankı uses Claude through Anthropic's API to produce reflections. Our own application checks the response format and quoted text, and applies a separate crisis-word check.",
         },
         "contact": {
@@ -196,8 +196,8 @@ COPY = {
                 {"label": "Odak", "value": "AI danışmanlığı ve ürün geliştirme"},
                 {"label": "Ürünümüz", "value": "Yankı · beta yayında"},
             ],
-            "legal": "Mevlana Yalçın, bu bağımsız faaliyetin adıdır. Henüz ayrı bir tescilli tüzel kişilik bulunmamaktadır. Görüşmeler ve çalışma koşulları doğrudan kurucu tarafından yürütülür.",
-            "dates": "mevlanayalcin.com.tr alan adı Eylül 2023'ten beri kurucuya aittir. Bu sitedeki danışmanlık hizmetleri ve Yankı'nın ürün geliştirme çalışmaları Ekim 2026'da başlamıştır. Alan adının tarihi, şirket tescil tarihi değildir.",
+            "legal": "Mevlana Yalçın, bu AI danışmanlığı ve ürün geliştirme işletmesini yürütür. Görüşmeler ve çalışma koşulları doğrudan kurucu tarafından belirlenir.",
+            "dates": "İşletme Kasım 2023'te tescil edilmiştir. mevlanayalcin.com.tr alan adı Eylül 2023'ten beri kurucuya aittir. Yankı'nın ürün geliştirme çalışmaları Ekim 2026'da başlamıştır.",
             "model_use": "Yankı, yansıtmaları üretmek için Anthropic API üzerinden Claude kullanır. Uygulama yanıt biçimini ve alıntıları denetler; kriz sözcükleri için ayrıca bir kural kontrolü uygular.",
         },
         "contact": {

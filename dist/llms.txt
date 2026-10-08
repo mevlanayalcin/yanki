@@ -4,8 +4,8 @@ AI consulting and product engineering from Ankara. We build with Claude and deve
 
 ## Identity
 Mevlana Yalçın is a founder-led AI consultancy and product studio based in Ankara, Türkiye. The founder develops Yankı and offers consulting on Claude adoption, integration and evaluation. Enquiries go directly to the person responsible for the work.
-Mevlana Yalçın is the name of this independent practice. It is not currently a separately incorporated legal entity. Enquiries and engagement terms are handled directly by the founder.
-The founder has held mevlanayalcin.com.tr since September 2023. The consulting offer on this site and product work on Yankı began in October 2026. The domain date is not an incorporation date.
+Mevlana Yalçın operates this AI consulting and product development business. Enquiries and engagement terms are handled directly by the founder.
+The business was registered in November 2023. The founder has held mevlanayalcin.com.tr since September 2023. Product work on Yankı began in October 2026.
 
 ## Product
 - Yankı: live beta for personal reflection. Uses Anthropic Messages API. Not therapy or medical advice.

@@ -71,9 +71,9 @@ değiştirilir; yalnız yeniden üretim sitemap tarihini ilerletmez.
 
 ## Kimlik
 
-Kurucu: Mevlana Yalçın, Ankara. Ayrı tescilli tüzel kişilik henüz yok.
-Domain başlangıcı Eylül 2023, sitedeki danışmanlık ve Yankı başlangıcı Ekim 2026;
-bu tarihler şirket tescil tarihi olarak sunulmaz. Site müşteri, yatırım, gelir,
+Kurucu: Mevlana Yalçın, Ankara. İşletmenin tescil tarihi Kasım 2023'tür.
+Alan adı Eylül 2023'ten beri kurucuya aittir; Yankı'nın ürün geliştirme çalışmaları
+Ekim 2026'da başlamıştır. Bu tarihler birbirinden ayrıdır. Site müşteri, yatırım, gelir,
 partnerlik veya startup programı kabulü hakkında doğrulanmamış iddia içermez.
 
 İletişim: info@mevlanayalcin.com.tr
