@@ -314,7 +314,10 @@ COPY["en"].update({
             {"title": "Frontier models depend on supplier admission", "body":
                 "Dated model snapshots served; alias and 'latest' identifiers returned supplier-side failures. "
                 "Nineteen request shapes across three surfaces behaved the same way, which places the limit "
-                "with the supplier, not the client."},
+                "with the supplier, not the client. Re-testing on 8 October reversed the pattern "
+                "outright: undated names served and the dated snapshots returned 404. Availability "
+                "tracks admission, and a price bound (`x-liquid-cap-usd`) is what makes the "
+                "automatic selection work at all."},
             {"title": "The useful endpoints are undocumented", "body":
                 "Quotes, receipts, balance and throughput routes were found in the shipped bundle, not the "
                 "manual; provider applications could be filed by API but key creation stayed gated behind "
@@ -414,7 +417,7 @@ COPY["tr"].update({
                 "%1'i. Bu, programların genellikle okunduğu şeyden önemli ölçüde farklı."},
             {"title": "Sınır modelleri tedarikçi kabulüne bağlı", "body":
                 "Tarihli model anlık görüntüleri servis edildi; taahhüt adı ve 'latest' biçimleri tedarikçi "
-                "tarafı hataları döndü. Üç arayüzde 19 istek biçimi aynı sonucu verdi: sınır müşteride değil."},
+                "tarafı hataları döndü. Üç arayüzde 19 istek biçimi aynı sonucu verdi: sınır müşteride değil. 8 Ekim'deki yeniden testte desen tümüyle tersine döndü: tarihli anlık görüntüler 404 verir, tarihsiz adlar servis edilir. Yani sınır kabul ve arz meselesi; otomatik seçimin çalışması ayrıca bir fiyatsınırına (`x-liquid-cap-usd`) bağlı."},
             {"title": "İşe yarayan uçlar dokümante değil", "body":
                 "Teklif, fiş, bakiye ve verim uçları kılavuzda değil paketlenmiş uygulamada bulundu; tedarikçi "
                 "başvurusu API ile yapılabiliyor ama anahtar üretimi insan kabulüne kadar kilitli."},
