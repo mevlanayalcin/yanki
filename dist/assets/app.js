@@ -27,16 +27,18 @@
   if (dugme && girdi && sonuc) {
     var beklenen = 0;
     dugme.addEventListener("click", function () {
-      var metin = girdi.value.trim();
+      // Yerel ad "metin" olamaz: yukaridaki metin() yardimcisini golgeler ve
+      // ilk durum yaziminda string'i fonksiyon gibi cagirdigi icin patlar.
+      var yazi = girdi.value.trim();
       sonuc.hidden = true;
       sonuc.innerHTML = "";
-      if (metin.length < 8) { metin(durum, tr ? "En az bir cümle yaz (8 karakter)." : "Write at least a sentence (8 characters)."); return; }
+      if (yazi.length < 8) { metin(durum, tr ? "En az bir cümle yaz (8 karakter)." : "Write at least a sentence (8 characters)."); return; }
       var kuyruk = ++beklenen;
       dugme.disabled = true;
       metin(durum, tr ? "Düşünüyor…" : "Thinking…");
       fetch("/api/reflect", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ text: metin, lang: tr ? "tr" : "en" })
+        body: JSON.stringify({ text: yazi, lang: tr ? "tr" : "en" })
       })
         .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
         .then(function (sonuc_) {

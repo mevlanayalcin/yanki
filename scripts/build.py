@@ -17,6 +17,8 @@ CIKTI = KOK / "dist"
 DOMAIN = "mevlanayalcin.com.tr"
 POSTA = "merhaba@" + DOMAIN
 DEPO = "https://github.com/mevlanayalcin/yanki"
+# Asset URL'lerine surum eklenir: her dagitimda onbellegi kirar.
+SURUM = "1"
 
 DILLER = {
     "en": {"kod": "en", "yol": "", "adi": "English"},
@@ -276,7 +278,7 @@ def kabuk(dil: str, anahtar: str, baslik: str, aciklama: str, govde: str, canoni
 <meta property="og:url" content="%(canonical)s" />
 <meta property="og:site_name" content="Yankı" />
 <meta name="twitter:card" content="summary" />
-<link href="/assets/site.css" rel="stylesheet" />
+<link href="/assets/site.css?v=%(surum)s" rel="stylesheet" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <script type="application/ld+json">%(jsonld)s</script>
 </head><body>
@@ -290,7 +292,7 @@ def kabuk(dil: str, anahtar: str, baslik: str, aciklama: str, govde: str, canoni
   <p class="altbilgi">%(altbilgi)s</p>
   <p class="altlinkler"><a href="%(depo)s">GitHub</a> · <a href="/llms.txt">llms.txt</a> · <a href="/%(yol)sapi/">API</a> · <a href="/%(yol)scompany/">Company</a></p>
 </footer>
-<script src="/assets/nav.js" defer></script>
+<script src="/assets/nav.js?v=%(surum)s" defer></script>
 %(betik)s
 </body></html>
 """ % {
@@ -298,7 +300,8 @@ def kabuk(dil: str, anahtar: str, baslik: str, aciklama: str, govde: str, canoni
         "canonical": canonical, "menu": menu(dil, anahtar), "govde": govde,
         "altbilgi": html.escape(IÇERIK[dil]["altbilgi"]), "depo": DEPO,
         "yol": DILLER[dil]["yol"],
-        "betik": "<script src=\"/assets/app.js\" defer></script>" if anahtar == "index" else "",
+        "surum": SURUM,
+        "betik": "<script src=\"/assets/app.js?v=1\" defer></script>" if anahtar == "index" else "",
         "jsonld": json.dumps(_jsonld(dil, canonical), ensure_ascii=False, separators=(",", ":")),
     }
 
@@ -448,6 +451,18 @@ def main() -> None:
             elif anahtar == "kurumsal":
                 aciklama = i["kurumsal"]["kimlik"]
             yaz(CIKTI / yol, kabuk(dil, anahtar, baslik, aciklama, govde_uret(dil, anahtar), canonical))
+
+    # 404 sayfasi: kabukla ayni cizgide, iki dilde de cikis verir
+    govde404 = (
+        '<section class="ku"><p class="ustbaslik">404</p><h1>%s</h1><p>%s</p>'
+        '<p><a href="/">%s</a> &middot; <a href="/tr/">Türkçe ana sayfa</a> &middot; '
+        '<a href="/company/">%s</a></p></section>'
+    ) % (
+        "Bu adres bir sayfaya denk gelmiyor." if True else "",
+        "Bağlantıyı elle yazdıysan yolu kontrol edin; bir yerden tıkladıysan bu bizim tarafımızda bir eksik — " + POSTA + " adresine yazarsan düzeltiriz.",
+        "English home", "Company",
+    )
+    yaz(CIKTI / "404.html", kabuk("en", "__404__", "Sayfa bulunamadı · Yankı", IÇERIK["en"]["ozet"], govde404, "https://%s/404" % DOMAIN))
 
     # robots + sitemap + llms.txt
     adresler = sorted({("https://%s/%s" % (DOMAIN, DILLER[d]["yol"] + (EK_URL[d][a].lstrip("/") if a != "index" else "")))

@@ -22,7 +22,10 @@ directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "404-page"
 
-# mevlanayalcin.com.tr zone'unun isim sunuculari Cloudflare'a devredildikten sonra acilir:
-# [[routes]]
-# pattern = "mevlanayalcin.com.tr"
-# custom_domain = true
+[[routes]]
+pattern = "mevlanayalcin.com.tr"
+custom_domain = true
+
+[[routes]]
+pattern = "www.mevlanayalcin.com.tr"
+custom_domain = true
