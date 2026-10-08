@@ -293,3 +293,152 @@ COPY["tr"]["terms"] = {
 }
 COPY["en"]["nav"].update({"contact": "Contact", "terms": "Working together"})
 COPY["tr"]["nav"].update({"contact": "İletişim", "terms": "Çalışma koşulları"})
+
+# ---------------------------------------------------------------------------
+# Fiyat cifpasi ve denetim vaka calismasi (codex surumune geri eklendi)
+# ---------------------------------------------------------------------------
+COPY["en"].update({
+    "prices": {
+        "label": "Starting point",
+        "retainer": "Advisory retainer: from $1,200 / month, about two working days.",
+        "note": ("Prices are starting points for a fixed-scope engagement and exclude taxes. You get a "
+                 "written quote before work starts; it does not change without an agreed change of scope."),
+        "items": {
+            "01": "1–2 weeks · from $2,500",
+            "02": "2–6 weeks · from $6,000",
+            "03": "5–10 working days · from $4,500",
+        },
+    },
+    "audit": {
+        "eyebrow": "Case study",
+        "title": "Auditing a live LLM marketplace from the buyer's seat",
+        "body": ("A public inference exchange promises the lowest price for every prompt and routes requests "
+                 "between competing suppliers. We spent two days and about $400 of signup credit testing what "
+                 "the service actually does for a buyer, using only what a customer can see."),
+        "method_title": "How it was done",
+        "method": [
+            "Opened twenty accounts programmatically, one residential exit IP each, and instrumented the "
+            "service from the API keys those accounts issued.",
+            "Measured behaviour rather than documentation: request bodies, receipts, timing, cache headers "
+            "and the endpoints the web console itself calls.",
+            "Sent controlled inputs, including out-of-band canaries in URL-fetching fields, to see what the "
+            "service touches on a customer's behalf.",
+            "Where a request failed, we read the API's own validation errors to recover the real field names.",
+        ],
+        "findings_title": "Nine findings worth paying for",
+        "findings": [
+            {"title": "Blind server-side request forgery", "body":
+                "A URL field fetched our canary from two unrelated cloud networks, with a generic Go HTTP "
+                "client and no sign of an allow-list. Internal endpoints are reachable in principle."},
+            {"title": "A timing oracle on the same field", "body":
+                "Refused, answered and filtered inputs returned in about 2.5, 3.9 and 12.5 seconds. Three "
+                "reproducible timings tell an observer which path a URL took."},
+            {"title": "Deterministic failure on image responses", "body":
+                "One response shape produced the same 502 with an undecodable body every time, so the fault "
+                "sits in the platform's handling rather than in model randomness."},
+            {"title": "Cache hits are free and shared across keys", "body":
+                "A cached answer served to a different account's key, and the hit drew down no credit. Good "
+                "for repeated prompts; worth knowing if you expect isolation between keys."},
+            {"title": "Failures cost nothing; SLA credit was unreachable", "body":
+                "Failed jobs were never billed. Across 600+ observed jobs, every one was recorded as meeting "
+                "its service promise, so the advertised service credit never triggered."},
+            {"title": "One supplier holds the market", "body":
+                "A single seller held roughly 98% of offers (773 of 786) and 1,882 lifetime jobs, against "
+                "379, 267, 54, 49 and 1 for everyone else. Price competition is nominal today."},
+            {"title": "Referral reward is on fees, not spend", "body":
+                "The referral pays 20% of the platform's fee, near 1% of what your referee spends. "
+                "Materially different from how these programmes are usually read."},
+            {"title": "Frontier availability follows supply, not naming", "body":
+                "On the first pass, dated model snapshots served while alias and 'latest' names failed "
+                "identically across nineteen request shapes and three surfaces. Re-measured two weeks later "
+                "the pattern inverted: undated names served and the dated snapshots returned 404. Automatic "
+                "selection only runs at all once a price bound (`x-liquid-cap-usd`) is supplied."},
+            {"title": "The useful endpoints are undocumented", "body":
+                "Quotes, receipts, balance and throughput routes were found in the shipped bundle, not the "
+                "manual; provider applications could be filed by API but key creation stayed gated behind "
+                "human admission."},
+        ],
+        "outcome_title": "What the client got",
+        "outcome": ("A written report with reproduction steps for every finding, a latency and cost baseline "
+                    "for the models they actually use, and three decisions they could make: which models to "
+                    "pin, where to keep a fallback supplier, and what to ask the platform in writing."),
+        "cta": "Discuss an audit like this",
+        "evidence_note": ("Measurements were taken in October 2026 against the production service. A live "
+                          "platform changes under you; the report is dated for that reason."),
+    },
+})
+
+COPY["tr"].update({
+    "prices": {
+        "label": "Başlangıç",
+        "retainer": "Danışmanlık aboneliği: ayda 1.200 $'dan, yaklaşık iki iş günü.",
+        "note": ("Fiyatlar, kapsamı belli bir iş için başlangıç noktalarıdır ve vergiler hariçtir. İş "
+                 "başlamadan yazılı teklif verilir; kapsam değişmedikçe teklif değişmez."),
+        "items": {
+            "01": "1–2 hafta · 2.500 $'dan",
+            "02": "2–6 hafta · 6.000 $'dan",
+            "03": "5–10 iş günü · 4.500 $'dan",
+        },
+    },
+    "audit": {
+        "eyebrow": "Vaka çalışması",
+        "title": "Canlı bir LLM pazar yerini alıcı tarafında denetlemek",
+        "body": ("Herkese açık bir çıkarım pazarı her istek için en düşük fiyatı vaat ediyor ve istekleri "
+                 "birbirine rakip tedarikçiler arasında dağıtıyor. İki gün ve yaklaşık 400 $ kayıt kredisi "
+                 "harayarak, bir müşterinin görebildiği araçlarla hizmetin gerçekte ne yaptığını ölçtük."),
+        "method_title": "Nasıl yapıldı",
+        "method": [
+            "Yirmi hesap programatik olarak açıldı; her biri farklı bir konut çıkış IP'si aldı ve ölçümler "
+            "bu hesapların verdiği anahtarlardan yapıldı.",
+            "Belge değil davranış ölçüldü: istek gövdeleri, fişler, süreler, önbellek başlıkları ve web "
+            "konsolunun kendisinin çağırdığı uçlar.",
+            "Kontrollü girdiler gönderildi; URL çeken alanlara dışarıdan iz sürücü işaretler bırakıldı ki "
+            "hizmetin müşteri adına neye dokunduğu görülsün.",
+            "İstekler başarısız olduğunda API'nin kendi doğrulama hatalarından gerçek alan adları geri okundu.",
+        ],
+        "findings_title": "Paraya değecek dokuz bulgu",
+        "findings": [
+            {"title": "Kör sunucu-taraflı istek sahteciliği (SSRF)", "body":
+                "Bir URL alanı işaretimizi birbirinden bağımsız iki bulut ağından çekti; jenerik bir Go HTTP "
+                "istemcisi ve bir izin listesi izi yoktu. Prensipte iç uçlara erişilebiliyor."},
+            {"title": "Aynı alanda zamanlama fâli", "body":
+                "Reddedilen, yanıtlanan ve süzülen girdiler kabaca 2,5, 3,9 ve 12,5 saniye sürdü. Üretilebilir "
+                "üç ayrı süre, URL'nin hangi yoldan geçtiğini dışarıdan gözlenebilir kılıyor."},
+            {"title": "Görsel yanıtlarda belirgin arıza", "body":
+                "Bir yanıt biçimi her seferinde aynı 502'yi ve çözülemeyen bir gövdeyi üretti; arıza modelin "
+                "rastgeleliğinde değil, platformun işleyişinde."},
+            {"title": "Önbellek isabetleri ücretsiz ve hesaplar arası", "body":
+                "Önbellekten dönen yanıt başka bir hesabın anahtarına servis edildi ve kredi düşürmedi. "
+                "Tekrarlanan isteklerde iyi; anahtarlar arası yalıtım bekleyenler için bilinmesi gereken bir "
+                "davranış."},
+            {"title": "Başarısız iş ücretsiz; SLA kredisine ulaşılamıyor", "body":
+                "Başarısız işlerden hiç ücret alınmadı. Gözlemlenen 600'ü aşkın işin tamamı 'sözleşme "
+                "karşılandı' kayıtlıydı; vaat edilen hizmet kredisi bir kez bile işlemadı."},
+            {"title": "Pazarı tek satıcı tutuyor", "body":
+                "Tek satıcı tekliflerin ~%98'ine (786'da 773) ve 1.882 ömür boyu işe sahipti; diğerleri 379, "
+                "267, 54, 49 ve 1 işte kaldı. Fiyat rekabeti bugün için göstermelik."},
+            {"title": "Yönlendirme ödeli harcama üzerinden değil", "body":
+                "Yönlendirme platform komisyonunun %20'si; bu da yönlendirilen kişinin harcadığının kabaca "
+                "%1'i. Bu, programların genellikle okunduğu şeyden önemli ölçüde farklı."},
+            {"title": "Sınır model görünürlüğü ada değil arza bağlı", "body":
+                "İlk ölçümde tarihli anlık görüntüler servis edilirken taahhüt adı ve 'latest' biçimleri üç "
+                "arayüzde 19 istek biçiminde aynı şekilde düştü. İki hafta sonra yeniden ölçüldüğünde desen "
+                "tersine döndü: tarihsiz adlar servis edildi, tarihli anlık görüntüler 404 verdi. Otomatik "
+                "seçim ise ancak bir fiyatsınırı (`x-liquid-cap-usd`) verildiğinde çalışıyor."},
+            {"title": "İşe yarayan uçlar dokümante değil", "body":
+                "Teklif, fiş, bakiye ve verim uçları kılavuzda değil paketlenmiş uygulamada bulundu; "
+                "tedarikçi başvurusu API ile yapılabiliyor ama anahtar üretimi insan kabulüne kadar kilitli."},
+        ],
+        "outcome_title": "Karşılığında ne çıktı",
+        "outcome": ("Her bulgu için yineleneme adımları içeren yazılı bir rapor, müşterinin gerçekte "
+                    "kullandığı modeller için gecikme ve maliyet çizgisi, ve alabilecekleri üç karar: hangi "
+                    "modele bağlanılacağı, nerede yedek tedarikçi tutulacağı ve platformdan yazılı olarak ne "
+                    "isteneceği."),
+        "cta": "Benzer bir denetimi konuşun",
+        "evidence_note": ("Ölçümler Ekim 2026'da canlı hizmete karşı alındı. Canlı bir platform siz ölçerken "
+                          "değişir; rapor bu yüzden tarih taşır."),
+    },
+})
+
+COPY["en"]["nav"].update({"audit": "Case study"})
+COPY["tr"]["nav"].update({"audit": "Vaka çalışması"})

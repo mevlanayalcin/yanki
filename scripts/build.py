@@ -19,8 +19,8 @@ PROFIL = 'https://github.com/mevlanayalcin'
 LINKEDIN = 'https://www.linkedin.com/in/mevlanayalcin'
 CONTENT_UPDATED = '2026-10-08'
 SLUG = {
-    'en': {'home': '/', 'services': '/services/', 'products': '/products/', 'approach': '/process/', 'company': '/company/', 'privacy': '/privacy/', 'yanki': '/work/yanki/', 'contact': '/contact/', 'terms': '/terms/'},
-    'tr': {'home': '/tr/', 'services': '/tr/hizmetler/', 'products': '/tr/urunler/', 'approach': '/tr/surec/', 'company': '/tr/kurumsal/', 'privacy': '/tr/gizlilik/', 'yanki': '/tr/calismalar/yanki/', 'contact': '/tr/iletisim/', 'terms': '/tr/sartlar/'},
+    'en': {'home': '/', 'services': '/services/', 'products': '/products/', 'approach': '/process/', 'company': '/company/', 'privacy': '/privacy/', 'yanki': '/work/yanki/', 'contact': '/contact/', 'terms': '/terms/', 'audit': '/work/inference-audit/'},
+    'tr': {'home': '/tr/', 'services': '/tr/hizmetler/', 'products': '/tr/urunler/', 'approach': '/tr/surec/', 'company': '/tr/kurumsal/', 'privacy': '/tr/gizlilik/', 'yanki': '/tr/calismalar/yanki/', 'contact': '/tr/iletisim/', 'terms': '/tr/sartlar/', 'audit': '/tr/calismalar/inference-denetimi/'},
 }
 E = html.escape
 ARROW = '<span class="arrow" aria-hidden="true">↗</span>'
@@ -44,6 +44,9 @@ def service_list(lang):
     rows = []
     for s in COPY[lang]['services']['items']:
         tags = ''.join(f'<span class="tag">{E(t)}</span>' for t in s['tags'])
+        fiyat = (COPY[lang].get('prices') or {}).get('items', {}).get(s['number'], '')
+        if fiyat:
+            tags += f'<span class="tag price">{E(fiyat)}</span>'
         label = f'{s["title"]} — {COPY[lang]["contact"]["cta"]}'
         rows.append(f'<article class="service-row"><span class="service-number">{s["number"]}</span><h3>{E(s["title"])}</h3><div class="service-body"><p>{E(s["body"])}</p><div class="tags">{tags}</div></div><a class="row-arrow" href="#contact" aria-label="{E(label, quote=True)}">{ARROW}</a></article>')
     return '<div class="service-list">' + ''.join(rows) + '</div>'
@@ -116,7 +119,11 @@ def content(lang, page):
     c = COPY[lang]
     if page == 'home': return home(lang)
     if page == 'services':
-        return page_hero(lang,'services') + f'<section class="page-content wrap">{service_list(lang)}<div class="tech-note">{E(c["services"]["body"])}</div>{link(c["nav"]["contact"],SLUG[lang]["contact"])}</section>'
+        pr = c.get('prices') or {}
+        alt = (f'<div class="tech-note">{E(pr.get("retainer",""))}</div>' if pr.get('retainer') else '') + \
+              (f'<p class="legal-note">{E(pr.get("note",""))}</p>' if pr.get('note') else '') + \
+              (link(c['audit']['cta'], SLUG[lang]['audit']) if c.get('audit') else '')
+        return page_hero(lang,'services') + f'<section class="page-content wrap">{service_list(lang)}<div class="tech-note">{E(c["services"]["body"])}</div>{alt}{link(c["nav"]["contact"],SLUG[lang]["contact"])}</section>'
     if page == 'products':
         return page_hero(lang,'products') + f'<section class="page-content wrap">{products(lang)}</section>' + claude_evidence(lang)
     if page == 'approach':
@@ -136,6 +143,18 @@ def content(lang, page):
         parcalar = ''.join(f'<section class="prose-section"><h2>{E(s["title"])}</h2><p>{E(s["body"])}</p></section>'
                            for s in t['sections'])
         return page_hero(lang, 'terms') + f'<div class="page-content wrap"><div class="prose">{parcalar}</div><div class="actions">{link(t["cta"], "mailto:" + POSTA, "button")}</div></div>'
+    if page == 'audit':
+        a = c['audit']
+        yontem = ''.join(f'<li>{E(m)}</li>' for m in a['method'])
+        bulgular = ''.join(f'<article class="step"><span class="step-number">0{i+1}</span><h3>{E(f["title"])}</h3><p>{E(f["body"])}</p></article>'
+                           for i, f in enumerate(a['findings']))
+        return page_hero(lang, 'audit') + f"""<section class="page-content wrap">
+<div class="prose"><h2>{E(a['method_title'])}</h2><ul class="method-list">{yontem}</ul>
+<p class="legal-note">{E(a['evidence_note'])}</p></div>
+<h2 class="findings-title">{E(a['findings_title'])}</h2><div class="approach-grid">{bulgular}</div>
+<div class="prose"><h2>{E(a['outcome_title'])}</h2><p>{E(a['outcome'])}</p></div>
+<div class="actions">{link(a['cta'], SLUG[lang]['contact'], 'button')}{link(c['nav']['services'], SLUG[lang]['services'])}</div>
+</section>"""
     if page == 'yanki': return yanki(lang)
     return f'<section class="not-found wrap"><p class="eyebrow">404</p><h1>{E(c["labels"]["not_found_title"])}</h1><p>{E(c["labels"]["not_found_body"])}</p>{link(c["labels"]["back"],SLUG[lang]["home"],"button")}</section>'
 
@@ -176,7 +195,7 @@ def shell(lang, page, version):
     og_image = 'https://' + DOMAIN + ('/og-tr.png' if lang == 'tr' else '/og.png')
     og_alt = 'Mevlana Yalçın — ' + ('Claude ile AI danışmanlığı ve Yankı' if lang == 'tr' else 'AI consulting with Claude and Yankı')
     alts = ''.join(f'<link rel="alternate" hreflang="{d}" href="https://{DOMAIN}{SLUG[d].get(page,SLUG[d]["home"])}">' for d in SLUG)
-    footer = f'''<footer class="footer wrap"><div class="footer-top">{brand(lang)}<p class="footer-copy">{E(c['footer']['description'])}<br>{E(c['footer']['location'])}</p></div><div class="footer-bottom"><span>© 2026 Mevlana Yalçın</span><nav class="footer-links" aria-label="{'Alt bağlantılar' if lang=='tr' else 'Footer'}"><a href="{SLUG[lang]['company']}">{E(c['footer']['legal'])}</a><a href="{SLUG[lang]['contact']}">{E(c['nav']['contact'])}</a><a href="{SLUG[lang]['privacy']}">{E(c['footer']['privacy'])}</a><a href="{SLUG[lang]['terms']}">{E(c['nav']['terms'])}</a><a href="{LINKEDIN}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="{PROFIL}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="{DEPO}" target="_blank" rel="noopener noreferrer">{'Kaynak kodu' if lang=='tr' else 'Source code'} ↗</a><a href="mailto:{POSTA}" class="email-link">{POSTA}</a></nav></div></footer>'''
+    footer = f'''<footer class="footer wrap"><div class="footer-top">{brand(lang)}<p class="footer-copy">{E(c['footer']['description'])}<br>{E(c['footer']['location'])}</p></div><div class="footer-bottom"><span>© 2026 Mevlana Yalçın</span><nav class="footer-links" aria-label="{'Alt bağlantılar' if lang=='tr' else 'Footer'}"><a href="{SLUG[lang]['company']}">{E(c['footer']['legal'])}</a><a href="{SLUG[lang]['contact']}">{E(c['nav']['contact'])}</a><a href="{SLUG[lang]['privacy']}">{E(c['footer']['privacy'])}</a><a href="{SLUG[lang]['terms']}">{E(c['nav']['terms'])}</a><a href="{SLUG[lang]['audit']}">{E(c['audit']['eyebrow'])}</a><a href="{LINKEDIN}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="{PROFIL}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="{DEPO}" target="_blank" rel="noopener noreferrer">{'Kaynak kodu' if lang=='tr' else 'Source code'} ↗</a><a href="mailto:{POSTA}" class="email-link">{POSTA}</a></nav></div></footer>'''
     return f'''<!DOCTYPE html>
 <html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{E(title)}</title><meta name="description" content="{E(description,quote=True)}"><meta name="theme-color" content="#f4f3ee"><link rel="canonical" href="{canonical}">{alts}<link rel="alternate" hreflang="x-default" href="https://{DOMAIN}{SLUG['en'].get(page,'/')}"><meta property="og:type" content="website"><meta property="og:title" content="{E(title,quote=True)}"><meta property="og:description" content="{E(description,quote=True)}"><meta property="og:url" content="{canonical}"><meta property="og:site_name" content="Mevlana Yalçın"><meta name="twitter:card" content="summary_large_image"><meta property="og:image" content="{og_image}"><meta property="og:image:type" content="image/png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="{E(og_alt,quote=True)}"><meta property="og:locale" content="{'tr_TR' if lang=='tr' else 'en_US'}"><meta name="twitter:image" content="{og_image}"><meta name="twitter:image:alt" content="{E(og_alt,quote=True)}"><link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css?v={version}"><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False)}</script></head>
 <body><a class="skip" href="#main">{'İçeriğe geç' if lang=='tr' else 'Skip to content'}</a><header class="header wrap">{brand(lang)}<nav class="nav" id="menu" aria-label="{'Ana menü' if lang=='tr' else 'Main navigation'}">{nav}</nav><button class="menu-toggle" id="menudugme" aria-expanded="false" aria-controls="menu">{'Menü' if lang=='tr' else 'Menu'}</button></header><main id="main">{breadcrumbs(lang,page)}{content(lang,page)}{contact(lang)}</main>{footer}<script src="/assets/nav.js?v={version}" defer></script>{f'<script src="/assets/app.js?v={version}" defer></script>' if page=='yanki' else ''}</body></html>'''
