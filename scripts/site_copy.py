@@ -442,3 +442,92 @@ COPY["tr"].update({
 
 COPY["en"]["nav"].update({"audit": "Case study"})
 COPY["tr"]["nav"].update({"audit": "Vaka çalışması"})
+
+# ---------------------------------------------------------------------------
+# Kisa teknik notlar (yazi bolumu) + KVKK basligi
+# ---------------------------------------------------------------------------
+COPY["en"].update({
+    "notes": {
+        "eyebrow": "Notes",
+        "title": "Short notes from measurements, not announcements",
+        "body": ("Working on live systems produces small facts that are expensive to rediscover. These are "
+                 "written down with the date they were true, because that is the part that expires."),
+        "items": [
+            {"date": "8 October 2026", "title": "A cache hit costs nothing, and it is not private",
+             "body": ("On a public inference exchange, an identical prompt served from cache drew down no credit "
+                      "and was returned to a different account's key. Free repeated answers, but isolation between "
+                      "API keys is weaker than the docs suggest. If your prompts contain customer identifiers, "
+                      "assume the cached copy may be handed to a stranger.")},
+            {"date": "8 October 2026", "title": "Automatic model selection is gated behind a price bound",
+             "body": ("Requests that let the platform choose the model fail with `auto_requires_price_bound` "
+                      "unless the client sends `x-liquid-cap-usd`. The bound is a per-request cap on the seller's "
+                      "payout, not on your total bill, and the cheapest eligible offer that clears the bound wins. "
+                      "A routing policy that omits the cap silently loses the automatic path.")},
+            {"date": "8 October 2026", "title": "Frontier availability follows supply, not the model name",
+             "body": ("Two measurements of the same marketplace, two weeks apart, gave opposite answers: first the "
+                      "dated model snapshots served while alias and 'latest' names failed identically across "
+                      "nineteen request shapes; then undated names served and the dated snapshots returned 404. "
+                      "A model ID is a claim about supply, not about capability. Pin behaviour, verify by sending "
+                      "a request.")},
+            {"date": "24 September 2026", "title": "The useful endpoints were in the bundle, not the manual",
+             "body": ("Quote, receipt, balance and throughput routes were found in the shipped JavaScript bundle. "
+                      "Reading a frontend bundle is a legitimate and fast way to discover the real API surface of a "
+                      "vendor you are evaluating; it also tells you what the vendor does not consider public.")},
+        ],
+        "note": ("Notes describe one measurement of one live service. They are not vendor statements, and a live "
+                 "platform changes under you."),
+        "cta": "Read the full audit",
+    },
+})
+COPY["tr"].update({
+    "notes": {
+        "eyebrow": "Notlar",
+        "title": "Duyurulardan değil ölçümlerden çıkan kısa notlar",
+        "body": ("Canlı sistemler üzerinde çalışmak, yeniden keşfetmesi pahalı küçük gerçekler üretir. Bunlar, "
+                 "doğru oldukları tarih yazılarak kayıt altına alınıyor; çünkü süresi dolan kısım orası."),
+        "items": [
+            {"date": "8 Ekim 2026", "title": "Önbellek isabeti ücretsiz — ve özel değil",
+             "body": ("Herkese açık bir çıkarım pazarında, aynı istek önbellekten döndüğünde kredi düşmedi ve bu "
+                      "yanıt başka bir hesabın anahtarına servis edildi. Tekrarlanan istekler bedava; ama API "
+                      "anahtarları arası yalıtım kılavuzun ima ettiğinden zayıf. İstekleriniz müşteri kimliği "
+                      "içeriyorsa, önbellekteki kopyanın bir yabancıya verilebileceğini varsayın.")},
+            {"date": "8 Ekim 2026", "title": "Otomatik model seçimi fiyatsınırının arkasında kilitli",
+             "body": ("Modeli platformun seçtiği istekler, istemci `x-liquid-cap-usd` göndermedikçe "
+                      "`auto_requires_price_bound` hatasıyla düşüyor. Bu sınır sizin toplam faturanıza değil, satıcının "
+                      "ödemesine istek başına bir tavan koyar ve sınırı geçen en ucuz uygun teklif kazanır. Rota "
+                      "politikasında tavan yoksa otomatik yol sessizce devre dışı kalır.")},
+            {"date": "8 Ekim 2026", "title": "Sınır model görünürlüğü modele değil arza bağlı",
+             "body": ("Aynı pazar yerinin iki hafta arayla iki ölçümü zıt cevap verdi: önce tarihli anlık görüntüler "
+                      "servis edilirken taahhüt adı ve 'latest' biçimleri on dokuz istek biçiminde üç arayüzde aynı "
+                      "şekilde düştü; sonra tarihsiz adlar servis edildi, tarihli anlık görüntüler 404 verdi. Model "
+                      "kimliği bir arz iddiasıdır, yetenek iddiası değil. Davranışı sabitleyin ve istek göndererek "
+                      "doğrulayın.")},
+            {"date": "24 Eylül 2026", "title": "İşe yarayan uçlar kılavuzda değil paketteydi",
+             "body": ("Teklif, fiş, bakiye ve verim uçları paketlenmiş JavaScript uygulamasında bulundu. Bir "
+                      "önucun paketini okumak, değerlendirdiğiniz satıcının gerçek API yüzeyini keşfetmenin meşru ve "
+                      "hızlı bir yolu; ayrıca satıcının neyi kamuya açık saymadığını da anlatır.")},
+        ],
+        "note": ("Notlar, canlı bir hizmetin tek bir ölçümünü anlatır. Satıcı beyanı değildirler ve canlı bir "
+                 "platform siz ölçürken değişir."),
+        "cta": "Denetimin tamamını okuyun",
+    },
+})
+COPY["en"]["nav"].update({"notes": "Notes"})
+COPY["tr"]["nav"].update({"notes": "Notlar"})
+COPY["en"]["privacy"]["sections"].append({
+    "title": "Turkish data protection (KVKK)",
+    "body": ("Mevlana Yalçın is the data controller (veri sorumlusu) for personal data received through this "
+             "site. Personal data is processed under Law No. 6698 (KVKK) for the purpose of answering enquiries "
+             "and performing contracted work, is transferred only to the hosting and model providers named above, "
+             "and is deleted when it is no longer needed for those purposes. You may request access, correction, "
+             "deletion or object to processing by email; include your full name and a contact address, and a "
+             "written response is provided free of charge within thirty days."),
+})
+COPY["tr"]["privacy"]["sections"].append({
+    "title": "KVKK aydınlatması",
+    "body": ("Bu site üzerinden alınan kişisel verilerde veri sorumlusu Mevlana Yalçın'dır. Kişisel veriler, 6698 "
+             "sayılı Kanun (KVKK) kapsamında yalnızca iletişime geçmek ve sözleşmesi yapılan işi yürütmek amacıyla "
+             "işlenir; yukarıda adları geçen barındırma ve model sağlayıcıları dışında bir tarafa aktarılmaz ve bu "
+             "amaçlar için gereği kalmadığında silinir. Erişim, düzeltme ve silme taleplerinizi ad-soyad ve "
+             "iletişim adresinizle e-posta ile iletebilirsiniz; yazılı cevap otuz gün içinde ve ücretsiz verilir."),
+})

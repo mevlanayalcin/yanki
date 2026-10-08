@@ -21,6 +21,7 @@ The founder has held mevlanayalcin.com.tr since September 2023. The consulting o
 - [en: contact](https://mevlanayalcin.com.tr/contact/)
 - [en: terms](https://mevlanayalcin.com.tr/terms/)
 - [en: audit](https://mevlanayalcin.com.tr/work/inference-audit/)
+- [en: notes](https://mevlanayalcin.com.tr/notes/)
 - [tr: home](https://mevlanayalcin.com.tr/tr/)
 - [tr: services](https://mevlanayalcin.com.tr/tr/hizmetler/)
 - [tr: products](https://mevlanayalcin.com.tr/tr/urunler/)
@@ -31,5 +32,6 @@ The founder has held mevlanayalcin.com.tr since September 2023. The consulting o
 - [tr: contact](https://mevlanayalcin.com.tr/tr/iletisim/)
 - [tr: terms](https://mevlanayalcin.com.tr/tr/sartlar/)
 - [tr: audit](https://mevlanayalcin.com.tr/tr/calismalar/inference-denetimi/)
+- [tr: notes](https://mevlanayalcin.com.tr/tr/notlar/)
 
 Contact: info@mevlanayalcin.com.tr
