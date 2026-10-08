@@ -1,32 +1,33 @@
-# Yankı
+# Mevlana Yalçın — AI consulting with Claude
 
-> Yankı mirrors your own words back, names what you appear to feel, and offers one small next step. It is a companion, not therapy, and it never invents a feeling you did not put there.
+AI consulting and product engineering from Ankara. We build with Claude and develop Yankı, a live reflection companion with public source code.
 
-Yankı is an emotional check-in companion, not therapy, not a diagnosis, not a medical device.
-Reflections are produced by Anthropic's Messages API with claude-haiku-4-5-20251001 under a JSON-only prompt;
-crisis wording is decided by a rule list before the model is called.
+## Identity
+Mevlana Yalçın is a founder-led AI consultancy and product studio based in Ankara, Türkiye. The founder develops Yankı and offers consulting on Claude adoption, integration and evaluation. Enquiries go directly to the person responsible for the work.
+Mevlana Yalçın is the name of this independent practice. It is not currently a separately incorporated legal entity. Enquiries and engagement terms are handled directly by the founder.
+The founder has held mevlanayalcin.com.tr since September 2023. The consulting offer on this site and product work on Yankı began in October 2026. The domain date is not an incorporation date.
+
+## Product
+- Yankı: live beta for personal reflection. Uses Anthropic Messages API. Not therapy or medical advice.
 
 ## Pages
+- [en: home](https://mevlanayalcin.com.tr/)
+- [en: services](https://mevlanayalcin.com.tr/services/)
+- [en: products](https://mevlanayalcin.com.tr/products/)
+- [en: approach](https://mevlanayalcin.com.tr/process/)
+- [en: company](https://mevlanayalcin.com.tr/company/)
+- [en: privacy](https://mevlanayalcin.com.tr/privacy/)
+- [en: yanki](https://mevlanayalcin.com.tr/work/yanki/)
+- [en: audit](https://mevlanayalcin.com.tr/work/inference-audit/)
+- [en: terms](https://mevlanayalcin.com.tr/terms/)
+- [tr: home](https://mevlanayalcin.com.tr/tr/)
+- [tr: services](https://mevlanayalcin.com.tr/tr/hizmetler/)
+- [tr: products](https://mevlanayalcin.com.tr/tr/urunler/)
+- [tr: approach](https://mevlanayalcin.com.tr/tr/surec/)
+- [tr: company](https://mevlanayalcin.com.tr/tr/kurumsal/)
+- [tr: privacy](https://mevlanayalcin.com.tr/tr/gizlilik/)
+- [tr: yanki](https://mevlanayalcin.com.tr/tr/calismalar/yanki/)
+- [tr: audit](https://mevlanayalcin.com.tr/tr/calismalar/inference-denetimi/)
+- [tr: terms](https://mevlanayalcin.com.tr/tr/sartlar/)
 
-- [Product](https://mevlanayalcin.com.tr/): what it does and a live demo box
-- [How it works](https://mevlanayalcin.com.tr/how-it-works/): the five steps of a check-in
-- [Safety](https://mevlanayalcin.com.tr/safety/): explicit limits, emergency notice (112 in Türkiye)
-- [Privacy](https://mevlanayalcin.com.tr/privacy/): text is not stored during the beta; no cookie set by us
-- [Company](https://mevlanayalcin.com.tr/company/): identity, roadmap with status, verification links
-- [API](https://mevlanayalcin.com.tr/api/): POST /api/reflect contract, errors, rate limit, budget guard
-
-### Türkçe
-
-- [Ürün](https://mevlanayalcin.com.tr/tr/)
-- [Nasıl çalışır](https://mevlanayalcin.com.tr/tr/nasil/)
-- [Güvenlik](https://mevlanayalcin.com.tr/tr/guvenlik/)
-- [Gizlilik](https://mevlanayalcin.com.tr/tr/gizlilik/)
-- [Kurumsal](https://mevlanayalcin.com.tr/tr/kurumsal/)
-- [API](https://mevlanayalcin.com.tr/tr/api/)
-
-## Facts kept separate on purpose
-
-- mevlanayalcin.com.tr is a personal domain held since September 2023.
-- Product work on Yankı began October 2026.
-- One person, bootstrapped, Ankara. No registered legal entity, no funding raised, no customers yet.
-- Waitlist only: sign-up at the site; deletion by email to merhaba@mevlanayalcin.com.tr.
+Contact: info@mevlanayalcin.com.tr

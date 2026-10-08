@@ -1,510 +1,231 @@
 #!/usr/bin/env python3
-"""Yanki sitesini uretir: dist/ icine iki dilde statik sayfalar, llms.txt, robots, sitemap.
-
-Tek kaynak bu dosyadaki IÇERIK sozlugudur; HTML iskeleti ortaktir. Kaydedilmis ornek
-cevaplar data/ornekler.json icinden gelir ve o dosya /api/reflect ucunun GERÇEK
-ciktilarindan olusur (elle yazilmis pazarlama metni degil).
-"""
-
+"""Build the bilingual consulting website and product pages from local sources."""
 from __future__ import annotations
 
+import hashlib
 import html
 import json
-import pathlib
+from pathlib import Path
+import shutil
 
-KOK = pathlib.Path(__file__).resolve().parent.parent
-CIKTI = KOK / "dist"
-DOMAIN = "mevlanayalcin.com.tr"
-POSTA = "merhaba@" + DOMAIN
-DEPO = "https://github.com/mevlanayalcin/yanki"
-# Asset URL'lerine surum eklenir: her dagitimda onbellegi kirar.
-SURUM = "1"
+from site_copy import COPY
 
-# Tek URL kaynagi: dil -> sayfa anahtari -> yol parcasi. canonical, menii, sitemap,
-# dosya yolu ve 404 baglantilarinin hepsi buradan uretilir; ayri ayri yazmak
-# /tr/tr/api/ gibi iki kez onekli yollara yol acti.
-KOK_YOL = {"en": "", "tr": "tr/"}
+KOK = Path(__file__).resolve().parent.parent
+CIKTI = KOK / 'dist'
+DOMAIN = 'mevlanayalcin.com.tr'
+POSTA = 'info@' + DOMAIN
+DEPO = 'https://github.com/mevlanayalcin/yanki'
+PROFIL = 'https://github.com/mevlanayalcin'
+LINKEDIN = 'https://www.linkedin.com/in/mevlanayalcin'
+OG_GORSEL = 'https://mevlanayalcin.com.tr/assets/og.png'
 SLUG = {
-    "en": {"index": "", "nasil": "how-it-works/", "guvenlik": "safety/", "gizlilik": "privacy/", "api": "api/", "kurumsal": "company/"},
-    "tr": {"index": "", "nasil": "nasil/", "guvenlik": "guvenlik/", "gizlilik": "gizlilik/", "api": "api/", "kurumsal": "kurumsal/"},
+    'en': {'home': '/', 'services': '/services/', 'products': '/products/', 'approach': '/process/', 'company': '/company/', 'privacy': '/privacy/', 'yanki': '/work/yanki/', 'audit': '/work/inference-audit/', 'terms': '/terms/'},
+    'tr': {'home': '/tr/', 'services': '/tr/hizmetler/', 'products': '/tr/urunler/', 'approach': '/tr/surec/', 'company': '/tr/kurumsal/', 'privacy': '/tr/gizlilik/', 'yanki': '/tr/calismalar/yanki/', 'audit': '/tr/calismalar/inference-denetimi/', 'terms': '/tr/sartlar/'},
 }
-
-def url(dil: str, anahtar: str) -> str:
-    return "/%s%s" % (KOK_YOL[dil], SLUG[dil][anahtar])
-
-def tam_url(dil: str, anahtar: str) -> str:
-    return "https://%s%s" % (DOMAIN, url(dil, anahtar))
-
-DILLER = {
-    "en": {"kod": "en", "yol": "", "adi": "English"},
-    "tr": {"kod": "tr", "yol": "tr/", "adi": "Türkçe"},
-}
-
-IÇERIK = {
-    "en": {
-        "baslik": "Yankı — a reflective AI companion for emotional check-ins",
-        "ozet": "Yankı mirrors your own words back, names what you appear to feel, and offers one small next step. It is a companion, not therapy, and it never invents a feeling you did not put there.",
-        "durum": "Private beta · built by one founder in Ankara",
-        "kahraman": {
-            "ust": "Three minutes, once a day",
-            "baslik": "Say it plainly. Get it back, clearer.",
-            "alti": "You write what happened and how it landed. Yankı returns the feeling it hears, the sentence of yours that carries it, and one concrete step you can take in the next hour.",
-        },
-        "nasil": {
-            "baslik": "How a check-in is built",
-            "adimlar": [
-                ("You write freely", "One text box. No forms, no mood emoji grid, no streaks to keep you hostage."),
-                ("It names the feeling", "A language model reads the passage and proposes one feeling label with an intensity, plus the alternative it considered and rejected."),
-                ("It quotes you", "The reflection carries your own sentence, unchanged. If it cannot find one, it says so instead of guessing."),
-                ("One small step", "A single, doable action for the next hour: four minutes of breathing, a two-line journal prompt, a walk, a message to a person."),
-                ("Crisis words are handled by rules", "A fixed word list runs before the model. If it hits, Yankı stops reflecting and shows human contacts. The model does not get to decide this."),
-            ],
-        },
-        "guvenlik": {
-            "baslik": "What Yankı is not",
-            "maddeler": [
-                "Not therapy, not a diagnosis, not a medical device. It has no clinical claim and asks none.",
-                "It does not advise on medication, dosage, or stopping treatment.",
-                "If you are in immediate danger or thinking of harming yourself, call 112 in Türkiye or your local emergency number. Yankı shows this banner whenever a crisis word appears, and it is a rule, not a model judgement.",
-                "Sessions are not used to train any model, by us or by a vendor.",
-                "Your text goes to Anthropic's API to produce the reflection, and it is retained there only under their API data terms, not ours.",
-            ],
-        },
-        "gizlilik": {
-            "baslik": "Where your text lives",
-            "maddeler": [
-                "Check-in text is sent to Anthropic for one inference call and is not stored on our servers during the beta.",
-                "The waitlist entry is one row: your email address, in Cloudflare KV. No advertising pixel, no session replay, no cookie set by us; Cloudflare's own cookieless traffic counter may load a script for aggregate pageview counts.",
-                "Ask for deletion at " + POSTA + " and the row is gone the same day.",
-                "Handled under Türkiye's KVKK; we keep no health record, so there is no clinical file to request.",
-            ],
-        },
-        "kurumsal": {
-            "baslik": "Company facts",
-            "kimlik": "Yankı is an operating name used by its founder, Mevlana Yalçın, for an emotional check-in companion. Contractual and contact point: " + POSTA + " · Ankara, Türkiye. Not a registered legal entity.",
-            "domain": "mevlanayalcin.com.tr is a personal domain the founder has held since September 2023. Product work on Yankı began in October 2026 and the two dates are kept separate on purpose.",
-            "ekip": "One person: founder, engineering, support. No agency, no subcontracted build.",
-            "claude": "Reflections are produced through Anthropic's Messages API with claude-haiku-4-5-20251001 under a reflection-constrained prompt that must return JSON. The output is schema-checked server side; a malformed answer is discarded rather than shown. Crisis wording is decided by a rule list before the model is called.",
-            "durumSatiri": "Live: this site, the /api/reflect endpoint, the waitlist. In development: the account, history and reminders. Planned: a clinician-reviewed protocol and a second language set.",
-            "roadmap": [
-                ("Reflection endpoint with schema checks", "Live", "Runs on Cloudflare Workers; sample answers on this page were captured from it."),
-                ("Waitlist with real deletion path", "Live", "One KV row per address, removed on request."),
-                ("Accounts, check-in history, reminders", "In development", "Local-first storage is the default; sync will be opt-in."),
-                ("Crisis word list in Turkish and English", "Live", "Our own conservative list; a false positive costs one unnecessary helpline banner, not a wrong reflection."),
-                ("Clinician review of the reflection protocol", "Planned", "Not started, no partner signed yet."),
-                ("Mobile apps", "Planned", "No date committed."),
-            ],
-            "dogrulama": [
-                ("Worker source", DEPO),
-                ("API contract", tam_url("en", "api")),
-                ("Machine-readable summary", "https://" + DOMAIN + "/llms.txt"),
-                ("Crawl test", "https://" + DOMAIN + "/robots.txt"),
-            ],
-        },
-        "fiyat": {
-            "baslik": "Price",
-            "metin": "Free during the private beta. When it is charged, the paid tier will be the one that keeps history and reminders; the reflective check-in itself will not become a paid feature that gates a person in distress.",
-        },
-        "api": {
-            "baslik": "API",
-            "metin": "One public endpoint for now, the same one this page's demo box calls. It is rate limited and carries a daily budget guard, so treat it as a sample integration, not infrastructure.",
-        },
-        "soru": {
-            "baslik": "Questions a reviewer usually asks",
-            "maddeler": [
-                ("Why a language model at all?", "Because naming a feeling from prose is not something a rules engine can do. The parts that must not be probabilistic — crisis detection, output shape, refusal to quote text that is not there — are handled by code around the model."),
-                ("What is Claude load-bearing for?", "The reflection itself. Remove Claude and the product has no centre; there is no rules-based fallback pretending to be one, the box just says it is unavailable."),
-                ("Is this a wrapper?", "The model is the core call; the value is in the constraint around it: JSON-only output, quoted-source-of-truth being the user's own text, rule-based crisis handling, no memory of your sessions in the beta."),
-                ("Who is it for?", "People who want a daily check-in habit and are not in active treatment. It is not for crisis care and says so in the interface."),
-            ],
-        },
-        "bekleyenler": "Join the waitlist",
-        "postaYeri": "your email",
-        "gizlilikNotu": "One row in Cloudflare: your address. Deletion on request at " + POSTA + ". No marketing drip.",
-        "demo": {
-            "baslik": "Try one reflection",
-            "alti": "This box calls the real endpoint. It does not store what you type.",
-            "giris": "Type a sentence about your day and how it made you feel…",
-            "dugme": "Reflect",
-            "bekleme": "Thinking…",
-            "hata": "The endpoint is unavailable right now (rate limit or daily budget). Nothing was stored.",
-        },
-        "ornekler": {
-            "baslik": "Three captured answers",
-            "alti": "Verbatim responses from /api/reflect, not rewritten for the page. The request text is shown above each answer.",
-        },
-        "altbilgi": "Yankı · Ankara, Türkiye · 2026 · operating name, not a registered legal entity · " + POSTA,
-        "sayfalar": [
-            ("index", "Product"),
-            ("nasil", "How it works"),
-            ("guvenlik", "Safety"),
-            ("gizlilik", "Privacy"),
-            ("api", "API"),
-            ("kurumsal", "Company"),
-        ],
-        "menuDilleri": {"en": "Türkçe", "tr": "English"},
-    },
-    "tr": {
-        "baslik": "Yankı — duygusal günlük kontrol için yansıtan yapay zekâ eşlikçisi",
-        "ozet": "Yankı kendi cümlelerini sana geri yansıtır, duyduğunu düşündüğü duyguyu adlandırır ve önündeki bir saat için tek bir somut adım önerir. O bir eşlikçidir, terapi değildir; senin koymadığın bir duyguyu uydurmaz.",
-        "durum": "Özel beta · Ankara'da tek kurucu tarafından geliştiriliyor",
-        "kahraman": {
-            "ust": "Günde üç dakika",
-            "baslik": "Olduğu gibi anlat. Daha net haliyle geri al.",
-            "alti": "Ne olduğunu ve sana nasıl dokunduğunu yazarsın. Yankı duyduğunu düşündüğü duyguyu, o duyguyu taşıyan kendi cümleni ve önündeki bir saat içinde atabileceğin tek adımı geri verir.",
-        },
-        "nasil": {
-            "baslik": "Bir günlük kontrol nasıl kurulur",
-            "adimlar": [
-                ("Serbest yazarsın", "Tek metin kutusu. Form yok, duygu emojisi panosu yok, sürdürmeye mecbur eden seri rekorları yok."),
-                ("Duyguyu adlandırır", "Dil modeli metni okur ve bir duygu etiketiyle şiddetini önerir; ayrıca düşünüp elediği alternatifi de söyler."),
-                ("Seni alıntılar", "Yansıtma, değişmemiş kendi cümleni taşır. Böyle bir cümle bulamazsa tahmin etmek yerine bulamadığını söyler."),
-                ("Tek küçük adım", "Önündeki bir saat için yapılabilecek tek şey: dört dakika nefes, iki satırlık bir yazı önerisi, bir yürüyüş, birine atılacak bir mesaj."),
-                ("Kriz kelimelerini kurallar işler", "Sabit bir kelime listesi modelden önce çalışır. Eşleşirse Yankı yansıtmayı bırakır ve insani iletişim hatlarını gösterir. Buna model karar vermez."),
-            ],
-        },
-        "guvenlik": {
-            "baslik": "Yankı ne değildir",
-            "maddeler": [
-                "Terapi değil, teşhis değil, tıbbi cihaz değil. Klinik bir iddiası yoktur ve iddia da talep etmez.",
-                "İlaç, doz veya tedavinin bırakılması hakkında öneri vermez.",
-                "Derhal bir tehlikedeyse ya da kendini yaralamayı düşünüyorsan Türkiye'de 112'yi ya da bulunduğun yerin acil numarasını ara. Kriz kelimesi geçtiğinde bu uyarıyı gösterir; bu bir kuraldır, modelin kararı değil.",
-                "Günlükler hiçbir modelin eğitiminin verisi yapılmaz — ne biz tarafından ne bir sağlayıcı tarafından.",
-                "Metin, yansıtmayı üretmek için Anthropic'in API'sine gider ve yalnızca onların API veri koşullarınca saklanır; bizim tarafımızda kayıt tutulmaz.",
-            ],
-        },
-        "gizlilik": {
-            "baslik": "Metnin nerede durur",
-            "maddeler": [
-                "Günlük metni tek bir çıkarım çağrısı için Anthropic'e gider ve beta süresince bizim sunucularımızda saklanmaz.",
-                "Bekleme listesi kaydı tek satırdır: e-posta adresin, Cloudflare KV içinde. Reklam pikseli yok, oturum kaydı yok, bizim koyduğumuz çerez yok; Cloudflare'ın çerezsiz sayaç betiği toplam sayfa görüntüleme sayısı için yüklenebilir.",
-                "Silme için " + POSTA + " adresine yaz; aynı gün silinir.",
-                "KVKK kapsamında ele alınır; sağlık kaydı tutmadığımız için talep edilecek klinik bir dosya da yoktur.",
-            ],
-        },
-        "kurumsal": {
-            "baslik": "Kurumsal künye",
-            "kimlik": "Yankı, kurucusu Mevlana Yalçın'ın duygusal kontrol eşlikçisi için kullandığı bir işletme adıdır. Sözleşme ve iletişim mercii: " + POSTA + " · Ankara, Türkiye. Tescilli tüzel kişilik değildir.",
-            "domain": "mevlanayalcin.com.tr, kurucunun Eylül 2023'ten beri elinde tuttuğu kişisel bir alan adadır. Yankı üzerindeki ürün çalışması Ekim 2026'da başlamıştır; bu iki tarih bilinçli olarak ayrı tutulur.",
-            "ekip": "Tek kişi: kurucu, mühendislik, destek. Ajans yok, taşerona devredilmiş iş yok.",
-            "claude": "Yansıtmalar Anthropic'in Messages API'si üzerinden, claude-haiku-4-5-20251001 ile ve JSON dönmek zorunda olan bir kısıtlı istemle üretilir. Çıktı sunucu tarafında şemaya göre denetlenir; bozuk cevap gösterilmez, atılır. Kriz sözcükleri modele sorulmadan önce bir kural listesiyle belirlenir.",
-            "durumSatiri": "Yayında: bu site, /api/reflect ucu, bekleme listesi. Geliştiriliyor: hesap, günlük geçmişi ve hatırlatmalar. Planlanan: bir klinik uzman tarafından değerlendirilmiş yansıtma protokolü ve ikinci dil seti.",
-            "roadmap": [
-                ("Şema denetimli yansıtma ucu", "Yayında", "Cloudflare Workers üzerinde çalışır; bu sayfadaki örnek cevaplar ondan kaydedildi."),
-                ("Gerçek silme yoluyla bekleme listesi", "Yayında", "Adres başına tek KV satırı; istenince silinir."),
-                ("Hesap, günlük geçmişi, hatırlatmalar", "Geliştiriliyor", "Yerel öncelikli saklama varsayılan olacak; eşitleme seçenekli olacak."),
-                ("Türkçe ve İngilizce kriz kelime listesi", "Yayında", "Kendi tuttuğumuz muhafazakar bir liste; yanlış-pozitif gereksiz bir yardım hattı uyarısına yol açar, yanlış bir yansıtmaya değil."),
-                ("Yansıtma protokolünün uzman değerlendirmesi", "Planlanan", "Başlamadı, imzalı ortak yok."),
-                ("Mobil uygulamalar", "Planlanan", "Verilmiş tarih yok."),
-            ],
-            "dogrulama": [
-                ("Worker kaynak kodu", DEPO),
-                ("API sözleşmesi", tam_url("tr", "api")),
-                ("Makine okumalı özet", "https://" + DOMAIN + "/llms.txt"),
-                ("Örümcek testi", "https://" + DOMAIN + "/robots.txt"),
-            ],
-        },
-        "fiyat": {
-            "baslik": "Fiyat",
-            "metin": "Özel beta boyunca ücretsiz. Ücretlendiğinde ücretli katman, geçmişi ve hatırlatmaları tutan katman olacak; zorlanan bir kişiyi kapıda bekleten yansıtma adımının kendisi ücretli bir kapıya dönüşmeyecek.",
-        },
-        "api": {
-            "baslik": "API",
-            "metin": "Şimdilik tek açık uç: bu sayfadaki deneme kutusunun çağırdığınla aynı uç. Hız sınırına ve günlük bütçe korumasına bağlı; altyapı değil, örnek bir bütünleştirme olarak bak.",
-        },
-        "soru": {
-            "baslik": "Bir incelemecinin genelde sorduğu sorular",
-            "maddeler": [
-                ("Neden dil modeli?", "Düz yazıdan duyguyu adlandırmayı kural motoru yapamaz. Olasılıksal olmaması gereken kısımlar — kriz tespiti, çıktı biçimi, olmayan bir cümleyi alıntılamama — modelin etrafındaki kodla yürütülür."),
-                ("Claude ne için vazgeçilemez?", "Yansıtmanın kendisi için. Claude'u çıkarırsan ürünün merkezi kalır; yokmuş gibi davranan bir kural tabanlı yedek de yoktur, kutu yalnızca ulaşılamadığını söyler."),
-                ("Bu bir sarmalayıcı mı?", "Model çekirdek çağrı; değer onun etrafındaki kısıtlarda: yalnızca JSON çıktısı, tek doğruluk kaynağının kullanıcının kendi metni olması, kural tabanlı kriz yönetimi, betada günlüklerin hafızada tutulmaması."),
-                ("Kim için?", "Aktif tedavide olmayan, günlük kontrol alışkanlığı isteyen kişiler için. Kriz bakımı için değildir ve arayüzde böyle söylenir."),
-            ],
-        },
-        "bekleyenler": "Bekleme listesine katıl",
-        "postaYeri": "e-posta adresin",
-        "gizlilikNotu": "Cloudflare'da tek satır: adresin. İstediğinde " + POSTA + " üzerinden silinir. Reklam postası yok.",
-        "demo": {
-            "baslik": "Bir yansıtma dene",
-            "alti": "Bu kutu gerçek ucu çağırır. Yazdığını saklamaz.",
-            "giris": "Gününü ve sana nasıl dokunduğunu bir cümleyle yaz…",
-            "dugme": "Yansıt",
-            "bekleme": "Düşünüyor…",
-            "hata": "Uç şu anda ulaşılamıyor (hız sınırı veya günlük bütçe). Hiçbir şey saklanmadı.",
-        },
-        "ornekler": {
-            "baslik": "Kaydedilmiş üç cevap",
-            "alti": "/api/reflect ucunun birebir cevapları; sayfa için yeniden yazılmadı. İstek metni her cevabın üstünde gösterilir.",
-        },
-        "altbilgi": "Yankı · Ankara, Türkiye · 2026 · işletme adı, tescilli tüzel kişilik değil · " + POSTA,
-        "sayfalar": [
-            ("index", "Ürün"),
-            ("nasil", "Nasıl çalışır"),
-            ("guvenlik", "Güvenlik"),
-            ("gizlilik", "Gizlilik"),
-            ("api", "API"),
-            ("kurumsal", "Kurumsal"),
-        ],
-        "menuDilleri": {"en": "Türkçe", "tr": "English"},
-    },
-}
-
-# Sayfa dosya adlari: dil -> {sayfa anahtari: yol}
-def sayfa_yollari():
-    return {d: {a: "%s%sindex.html" % (KOK_YOL[d], SLUG[d][a]) for a in SLUG[d]} for d in SLUG}
-
-SAYFALAR = sayfa_yollari()
+E = html.escape
+ARROW = '<span class="arrow" aria-hidden="true">↗</span>'
+MARK = '<svg class="brandmark" aria-hidden="true" viewBox="0 0 40 40" fill="none"><path d="M2 34V6h8l10 15L30 6h8v28h-8V20L20 35 10 20v14H2Z" fill="currentColor"/><path d="M31 30h7v7h-7z" fill="#d95535"/></svg>'
 
 
-def menu(dil: str, aktif: str) -> str:
-    liste = []
-    for anahtar, ad in IÇERIK[dil]["sayfalar"]:
-        isaret = ' class="aktif"' if anahtar == aktif else ""
-        liste.append('<a href="%s"%s>%s</a>' % (url(dil, anahtar), isaret, html.escape(ad)))
-    digeri = "tr" if dil == "en" else "en"
-    liste.append('<a class="dil" href="%s">%s</a>' % (url(digeri, "index") or "/", IÇERIK[dil]["menuDilleri"][dil]))
-    return "\n      ".join(liste)
+def link(text, href, cls='text-link', external=False):
+    extra = ' target="_blank" rel="noopener noreferrer"' if external else ''
+    return f'<a class="{cls}" href="{E(href, quote=True)}"{extra}>{E(text)}{ARROW}</a>'
 
 
-def kabuk(dil: str, anahtar: str, baslik: str, aciklama: str, govde: str, canonical: str) -> str:
-    hreflang_tr = "/tr/" if dil == "en" else "/"
-    return """<!DOCTYPE html>
-<html lang="%(dil)s"><head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>%(baslik)s</title>
-<meta name="description" content="%(aciklama)s" />
-<link rel="canonical" href="%(canonical)s" />
-<meta property="og:type" content="website" />
-<meta property="og:title" content="%(baslik)s" />
-<meta property="og:description" content="%(aciklama)s" />
-<meta property="og:url" content="%(canonical)s" />
-<meta property="og:site_name" content="Yankı" />
-<meta name="twitter:card" content="summary" />
-<link href="/assets/site.css?v=%(surum)s" rel="stylesheet" />
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-<script type="application/ld+json">%(jsonld)s</script>
-</head><body>
-<header class="ust">
-  <a class="kul" href="%(anasayfa)s">Yankı<span class="nokta">.</span></a>
-  <nav class="menu" id="menu">%(menu)s</nav>
-  <button class="menudugme" id="menudugme" aria-expanded="false" aria-controls="menu">Menu</button>
-</header>
-<main>%(govde)s</main>
-<footer class="alt">
-  <p class="altbilgi">%(altbilgi)s</p>
-  <p class="altlinkler"><a href="%(depo)s">GitHub</a> · <a href="/llms.txt">llms.txt</a> · <a href="%(apiUrl)s">API</a> · <a href="%(kurumsalUrl)s">Company</a></p>
-</footer>
-<script src="/assets/nav.js?v=%(surum)s" defer></script>
-%(betik)s
-</body></html>
-""" % {
-        "dil": dil, "baslik": html.escape(baslik), "aciklama": html.escape(aciklama),
-        "canonical": canonical, "menu": menu(dil, anahtar), "govde": govde,
-        "altbilgi": html.escape(IÇERIK[dil]["altbilgi"]), "depo": DEPO,
-        "surum": SURUM,
-        "apiUrl": url(dil, "api"), "kurumsalUrl": url(dil, "kurumsal"),
-        "anasayfa": url(dil, "index") or "/",
-        "betik": "<script src=\"/assets/app.js?v=1\" defer></script>" if anahtar == "index" else "",
-        "jsonld": json.dumps(_jsonld(dil, canonical), ensure_ascii=False, separators=(",", ":")),
-    }
+def brand(lang):
+    return f'<a class="brand" href="{SLUG[lang]["home"]}" aria-label="Mevlana Yalçın — {"Ana sayfa" if lang == "tr" else "Home"}">{MARK}<span class="brand-name">Mevlana Yalçın<small>AI consulting</small></span></a>'
 
 
-def _jsonld(dil: str, canonical: str) -> dict:
-    i = IÇERIK[dil]
-    return {
-        "@context": "https://schema.org",
-        "@graph": [
-            {"@type": "Organization", "@id": "https://%s/#org" % DOMAIN, "name": "Yankı",
-             "url": "https://%s/" % DOMAIN, "email": POSTA,
-             "description": i["ozet"],
-             "founder": {"@type": "Person", "name": "Mevlana Yalçın"},
-             "numberOfEmployees": {"@type": "QuantitativeValue", "value": 1},
-             "address": {"@type": "PostalAddress", "addressLocality": "Ankara", "addressCountry": "TR"},
-             "codeRepository": DEPO},
-            {"@type": "SoftwareApplication", "name": "Yankı", "url": canonical,
-             "applicationCategory": "LifestyleApplication", "operatingSystem": "Web",
-             "inLanguage": ["en", "tr"], "description": i["ozet"],
-             "publisher": {"@id": "https://%s/#org" % DOMAIN},
-             "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}},
-        ],
-    }
+def heading(eyebrow, title, body='', compact=False):
+    return f'<div class="section-top{" compact" if compact else ""}"><p class="eyebrow">{E(eyebrow)}</p><div><h2>{E(title)}</h2>{f"<p class=\"section-intro\">{E(body)}</p>" if body else ""}</div></div>'
 
 
-def _liste(maddeler: list, sirali: bool = False) -> str:
-    etiket = "ol" if sirali else "ul"
-    return "<%s class=\"maddeler\">" % etiket + "".join("<li>%s</li>" % m for m in maddeler) + "</%s>" % etiket
+def service_list(lang):
+    rows = []
+    for s in COPY[lang]['services']['items']:
+        tags = ''.join(f'<span class="tag">{E(t)}</span>' for t in s['tags'])
+        fiyat = (COPY[lang].get('prices') or {}).get('items', {}).get(s['number'], '')
+        if fiyat:
+            tags += f'<span class="tag price">{E(fiyat)}</span>'
+        label = f'{s["title"]} — {COPY[lang]["contact"]["cta"]}'
+        rows.append(f'<article class="service-row"><span class="service-number">{s["number"]}</span><h3>{E(s["title"])}</h3><div class="service-body"><p>{E(s["body"])}</p><div class="tags">{tags}</div></div><a class="row-arrow" href="#contact" aria-label="{E(label, quote=True)}">{ARROW}</a></article>')
+    return '<div class="service-list">' + ''.join(rows) + '</div>'
 
 
-def _ornekler(dil: str) -> str:
-    dosya = KOK / "data" / "ornekler.json"
-    if not dosya.exists():
-        return ""
-    veri = json.loads(dosya.read_text(encoding="utf-8"))
-    ba = "<h2>%s</h2><p class=\"alt\">%s</p>" % (html.escape(IÇERIK[dil]["ornekler"]["baslik"]), html.escape(IÇERIK[dil]["ornekler"]["alti"]))
-    kartlar = []
-    for o in veri.get(dil) or veri.get("en") or []:
-        kartlar.append(
-            "<article class=\"ornek\"><p class=\"soru\">“%s”</p><dl>"
-            "<dt>Duygu</dt><dd>%s <span class=\"siddet\">%s</span></dd>"
-            "<dt>Yansıtma</dt><dd>%s</dd>"
-            "<dt>Alıntı</dt><dd class=\"ali%d\">%s</dd>"
-            "<dt>Adım</dt><dd>%s</dd>"
-            "</dl><p class=\"motor\">%s · %s</p></article>"
-            % (html.escape(o["girdi"]), html.escape(o.get("duygu") or "—"), html.escape(str(o.get("siddet") or "")),
-               html.escape(o.get("yansitma") or "—"), 0 if not o.get("alıntı") else 0,
-               html.escape(o.get("alıntı") or "—"), html.escape(o.get("adım") or "—"),
-               html.escape(o.get("provider") or ""), html.escape(o.get("model") or ""))
-        )
-    return ba + "<div class=\"ornekler\">" + "".join(kartlar) + "</div>"
+def product_art(lang):
+    line = 'Bugün, kendi kelimelerinle.' if lang == 'tr' else 'Today, in your own words.'
+    small = 'CLAUDE İLE YANSITMA' if lang == 'tr' else 'REFLECTION WITH CLAUDE'
+    return f'<div class="product-art yanki" aria-hidden="true"><span class="artifact-label">YANKI / CLAUDE API</span><div class="note-preview"><div class="preview-brand">yankı<i></i></div><p>{line}</p><div class="note-line"></div><small>{small}</small></div></div>'
 
 
-def govde_uret(dil: str, anahtar: str) -> str:
-    i = IÇERIK[dil]
-    d = i["demo"]
-    if anahtar == "index":
-        return (
-            '<section class="kahraman"><div class="iç">'
-            '<p class="ustbaslik">%s</p><h1>%s</h1><p class="alti">%s</p>'
-            '<p class="durum">%s</p>'
-            '<form class="bekleme" id="bekleme" action="/api/waitlist" method="post">'
-            '<input type="email" name="email" required placeholder="%s" aria-label="%s" />'
-            '<button type="submit">%s</button><p class="not" id="beklemeyanit">%s</p></form>'
-            "</div>"
-            '<div class="kutu" id="kutu">'
-            '<h2 class="kutuBaslik">%s</h2><p class="kutuAlti">%s</p>'
-            '<textarea id="girdi" rows="3" placeholder="%s"></textarea>'
-            '<div class="kutuEylem"><button id="yansit">%s</button><span id="durum" aria-live="polite"></span></div>'
-            '<div id="sonuc" hidden></div>'
-            "</div></section>"
-            '<section class="ku" id="ornekler">%s</section>' % (
-                html.escape(i["kahraman"]["ust"]), html.escape(i["kahraman"]["baslik"]), html.escape(i["kahraman"]["alti"]),
-                html.escape(i["durum"]), html.escape(d["giris"]), html.escape(d["giris"]), html.escape(i["bekleyenler"]),
-                html.escape(d["gizlilikNotu"] if False else i["gizlilikNotu"]),
-                html.escape(d["baslik"]), html.escape(d["alti"]), html.escape(d["giris"]), html.escape(d["dugme"]), _ornekler(dil))
-        )
-    if anahtar == "nasil":
-        adimlar = "".join('<li><h3>%s</h3><p>%s</p></li>' % (html.escape(b), html.escape(m)) for b, m in i["nasil"]["adimlar"])
-        return '<section class="ku"><h1>%s</h1><ol class="adimlar">%s</ol><p class="motorNotu">%s</p></section>' % (
-            html.escape(i["nasil"]["baslik"]), adimlar, html.escape(i["kurumsal"]["claude"]))
-    if anahtar == "guvenlik":
-        return '<section class="ku"><h1>%s</h1>%s<p class="vurgu">%s</p></section>' % (
-            html.escape(i["guvenlik"]["baslik"]), _liste([html.escape(m) for m in i["guvenlik"]["maddeler"]]),
-            html.escape(i["fiyat"]["metin"]))
-    if anahtar == "gizlilik":
-        return '<section class="ku"><h1>%s</h1>%s</section>' % (
-            html.escape(i["gizlilik"]["baslik"]), _liste([html.escape(m) for m in i["gizlilik"]["maddeler"]]))
-    if anahtar == "api":
-        tablo = (
-            "<table class=\"sozlesme\"><tr><th>Method</th><td>POST</td></tr>"
-            "<tr><th>Path</th><td>/api/reflect</td></tr>"
-            "<tr><th>Request</th><td><code>{&quot;text&quot;: string, &quot;lang&quot;: &quot;en&quot;|&quot;tr&quot;}</code> — 8–600 characters</td></tr>"
-            "<tr><th>Response</th><td><code>{duygu, siddet, yansitma, alinti, adim, disclaimer, provider, model, cache}</code></td></tr>"
-            "<tr><th>Errors</th><td><code>bad_request</code> 400 · <code>too_long</code> 413 · <code>busy</code> 429 · <code>daily_budget</code> 503 · <code>upstream</code> 502</td></tr>"
-            "<tr><th>Rate limit</th><td>6 requests / 60 s per IP</td></tr>"
-            "<tr><th>Budget</th><td>A daily payment-equivalent cap stops the endpoint before the balance runs out</td></tr>"
-            "<tr><th>Crisis wording</th><td>Handled by a rule list before the model call; the answer is replaced by helpline text</td></tr></table>"
-        )
-        return '<section class="ku"><h1>%s</h1><p>%s</p>%s</section><section class="ku">%s</section>' % (
-            html.escape(i["api"]["baslik"]), html.escape(i["api"]["metin"]), tablo, _ornekler(dil))
-    if anahtar == "kurumsal":
-        satirlar = "".join('<tr><th scope="row">%s</th><td>%s</td></tr>' % (b, m) for b, m in [
-            ("Kimlik" if dil == "tr" else "Identity", html.escape(i["kurumsal"]["kimlik"])),
-            ("Domain", html.escape(i["kurumsal"]["domain"])),
-            ("Ekip" if dil == "tr" else "Team", html.escape(i["kurumsal"]["ekip"])),
-            ("Claude", html.escape(i["kurumsal"]["claude"])),
-            ("Durum" if dil == "tr" else "Status", html.escape(i["kurumsal"]["durumSatiri"])),
-        ])
-        plan = "".join('<tr><td>%s</td><td><span class="durum-%s">%s</span></td><td>%s</td></tr>' % (
-            html.escape(ad), durum.replace(" ", "-").lower(), html.escape(durum), html.escape(notu))
-            for ad, durum, notu in i["kurumsal"]["roadmap"])
-        dogr = "".join('<li><a href="%s">%s</a></li>' % (u, html.escape(ad)) for ad, u in i["kurumsal"]["dogrulama"])
-        soru = "".join("<details><summary>%s</summary><p>%s</p></details>" % (html.escape(s), html.escape(c)) for s, c in i["soru"]["maddeler"])
-        return ('<section class="ku"><h1>%s</h1><table class="kunya">%s</table></section>'
-                '<section class="ku"><h2>%s</h2><table class="plan">%s</table></section>'
-                '<section class="ku"><h2>%s</h2><ul class="dogrulama">%s</ul></section>'
-                '<section class="ku"><h2>%s</h2>%s</section>') % (
-            html.escape(i["kurumsal"]["baslik"]), satirlar,
-            html.escape("Roadmap" if dil == "en" else "Yol haritası"), plan,
-            html.escape("Verify this independently" if dil == "en" else "Bağımsız doğrulama"), dogr,
-            html.escape(i["soru"]["baslik"]), soru)
-    return ""
+def products(lang):
+    items = []
+    for p in COPY[lang]['products']['items']:
+        href = SLUG[lang]['yanki'] if p['slug'] == 'yanki' else p['href']
+        items.append(f'<article class="product-card">{product_art(lang)}<div class="product-copy"><div class="product-topline"><span class="product-name">{E(p["name"])}</span><span class="product-status">{E(p["status"])}</span></div><h3>{E(p["title"])}</h3><p>{E(p["body"])}</p>{link(p["cta"],href,external=href.startswith("https:"))}<span class="product-category">{E(p["category"])}</span></div></article>')
+    return '<div class="product-grid one">' + ''.join(items) + '</div>'
 
 
-def yaz(dosya: pathlib.Path, metin: str) -> None:
-    dosya.parent.mkdir(parents=True, exist_ok=True)
-    dosya.write_text(metin, encoding="utf-8")
+def claude_evidence(lang):
+    c = COPY[lang]['claude']
+    items = ''.join(f'<article class="step"><span class="step-number">0{i+1}</span><h3>{E(item["title"])}</h3><p>{E(item["body"])}</p></article>' for i,item in enumerate(c['items']))
+    return f'<section class="section wrap claude-evidence" id="claude">{heading(c["eyebrow"],c["title"],c["body"])}<div class="approach-grid">{items}</div><div class="actions">{link(c["cta"],SLUG[lang]["yanki"],"button")}{link(c["source_label"],DEPO,external=True)}</div></section>'
 
 
-def main() -> None:
-    for dil, harita in SAYFALAR.items():
-        for anahtar, yol in harita.items():
-            i = IÇERIK[dil]
-            aciklama = i["ozet"] if anahtar == "index" else i.get({"nasil": "nasil", "guvenlik": "guvenlik", "gizlilik": "gizlilik", "api": "api", "kurumsal": "kurumsal"}[anahtar], {}).get("baslik", i["ozet"])
-            baslik = i["baslik"] if anahtar == "index" else "%s · Yankı" % aciklama
-            canonical = tam_url(dil, anahtar)
-            if anahtar == "nasil":
-                aciklama = i["nasil"]["baslik"] + " — " + i["kahraman"]["alti"]
-            elif anahtar == "guvenlik":
-                aciklama = i["guvenlik"]["baslik"] + " — " + i["guvenlik"]["maddeler"][0]
-            elif anahtar == "gizlilik":
-                aciklama = i["gizlilik"]["baslik"] + " — " + i["gizlilik"]["maddeler"][0]
-            elif anahtar == "api":
-                aciklama = i["api"]["metin"]
-            elif anahtar == "kurumsal":
-                aciklama = i["kurumsal"]["kimlik"]
-            yaz(CIKTI / yol, kabuk(dil, anahtar, baslik, aciklama, govde_uret(dil, anahtar), canonical))
-
-    # 404 sayfasi: kabukla ayni cizgide, iki dilde de cikis verir
-    govde404 = (
-        '<section class="ku"><p class="ustbaslik">404</p><h1>%s</h1><p>%s</p>'
-        '<p><a href="%s">%s</a> &middot; <a href="%s">Türkçe ana sayfa</a> &middot; '
-        '<a href="%s">%s</a></p></section>'
-    ) % (
-        "Bu adres bir sayfaya denk gelmiyor.",
-        "Bağlantıyı elle yazdıysan yolu kontrol edin; bir yerden tıkladıysan bu bizim tarafımızda bir eksik — " + POSTA + " adresine yazarsan düzeltiriz.",
-        tam_url("en", "index"), "English home", tam_url("tr", "index"), tam_url("en", "kurumsal"), "Company",
-    )
-    yaz(CIKTI / "404.html", kabuk("en", "__404__", "Sayfa bulunamadı · Yankı", IÇERIK["en"]["ozet"], govde404, "https://%s/404" % DOMAIN))
-
-    # robots + sitemap + llms.txt
-    adresler = sorted({tam_url(d, a) for d in SLUG for a in SLUG[d]})
-    sitemap = ('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-               + "".join("<url><loc>%s</loc></url>" % u for u in adresler) + "</urlset>")
-    yaz(CIKTI / "sitemap.xml", sitemap)
-    yaz(CIKTI / "robots.txt", "User-agent: *\nAllow: /\nSitemap: https://%s/sitemap.xml\n" % DOMAIN)
-    llms = [
-        "# Yankı", "",
-        "> " + IÇERIK["en"]["ozet"], "",
-        "Yankı is an emotional check-in companion, not therapy, not a diagnosis, not a medical device.",
-        "Reflections are produced by Anthropic's Messages API with claude-haiku-4-5-20251001 under a JSON-only prompt;",
-        "crisis wording is decided by a rule list before the model is called.", "",
-        "## Pages", "",
-        "- [Product](%s): what it does and a live demo box" % tam_url("en", "index"),
-        "- [How it works](%s): the five steps of a check-in" % tam_url("en", "nasil"),
-        "- [Safety](%s): explicit limits, emergency notice (112 in Türkiye)" % tam_url("en", "guvenlik"),
-        "- [Privacy](%s): text is not stored during the beta; no cookie set by us" % tam_url("en", "gizlilik"),
-        "- [Company](%s): identity, roadmap with status, verification links" % tam_url("en", "kurumsal"),
-        "- [API](%s): POST /api/reflect contract, errors, rate limit, budget guard" % tam_url("en", "api"),
-        "",
-        "### Türkçe", "",
-        "- [Ürün](%s)" % tam_url("tr", "index"),
-        "- [Nasıl çalışır](%s)" % tam_url("tr", "nasil"),
-        "- [Güvenlik](%s)" % tam_url("tr", "guvenlik"),
-        "- [Gizlilik](%s)" % tam_url("tr", "gizlilik"),
-        "- [Kurumsal](%s)" % tam_url("tr", "kurumsal"),
-        "- [API](%s)" % tam_url("tr", "api"),
-        "",
-        "## Facts kept separate on purpose", "",
-        "- mevlanayalcin.com.tr is a personal domain held since September 2023.",
-        "- Product work on Yankı began October 2026.",
-        "- One person, bootstrapped, Ankara. No registered legal entity, no funding raised, no customers yet.",
-        "- Waitlist only: sign-up at the site; deletion by email to " + POSTA + ".",
-    ]
-    yaz(CIKTI / "llms.txt", "\n".join(llms) + "\n")
-    yaz(CIKTI / "favicon.svg", '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0f3d3e"/><path d="M18 20v9c0 8 8 10 8 18m0 0c0-8 8-10 8-18v-9m-8 18v14" stroke="#f2e9dc" stroke-width="4" fill="none" stroke-linecap="round"/></svg>\n')
-    print("uretildi:", len(adresler), "URL ->", CIKTI)
+def process(lang):
+    rows = ''.join(f'<article class="step"><span class="step-number">{s["number"]}</span><h3>{E(s["title"])}</h3><p>{E(s["body"])}</p></article>' for s in COPY[lang]['process']['steps'])
+    return f'<div class="approach-grid">{rows}</div>'
 
 
-if __name__ == "__main__":
-    main()
+def contact(lang):
+    c = COPY[lang]['contact']
+    subject = 'Proje görüşmesi' if lang == 'tr' else 'Project enquiry'
+    from urllib.parse import quote
+    return f'<section class="contact" id="contact"><div class="wrap contact-top"><div><p class="eyebrow">{E(c["eyebrow"])}</p><h2>{E(c["title"])}</h2><p>{E(c["body"])}</p></div><div class="contact-action">{link(c["cta"], "mailto:"+POSTA+"?subject="+quote(subject), "button light")}<a class="contact-email" href="mailto:{POSTA}">{POSTA}</a></div></div></section>'
+
+
+def home(lang):
+    c = COPY[lang]; h = c['hero']
+    names = ['Düşün', 'Geliştir', 'Yayınla'] if lang == 'tr' else ['Think', 'Build', 'Ship']
+    caps = ''.join(f'<span><b>0{i+1}</b>{name}</span>' for i, name in enumerate(names))
+    s,p,a = c['services'],c['products'],c['process']
+    return f'''<section class="hero wrap">
+<div class="hero-top"><p class="eyebrow">{E(h['eyebrow'])}</p><span class="location"><span class="status-dot"></span>Ankara, Türkiye</span></div>
+<div class="hero-grid"><div class="hero-copy"><h1>{E(h['title'])}<span class="accent">{E(h['title_accent'])}</span></h1><p>{E(h['body'])}</p><div class="actions">{link(h['primary'],SLUG[lang]['yanki'],'button')}{link(h['secondary'],'#claude')}</div></div>
+<div class="hero-art"><img src="/assets/structure.svg" width="620" height="620" alt="" fetchpriority="high"><div class="art-caption"><span>{'Fikirden sisteme' if lang=='tr' else 'From possibility to practice'}</span><span>MY / 01</span></div></div></div>
+<div class="hero-bottom"><span>{E(h['note'])}</span><div class="capabilities">{caps}</div></div></section>
+<section class="intro wrap">{heading(c['intro']['eyebrow'],c['intro']['title'],c['intro']['body'])}</section>
+<section class="section products-section" id="products"><div class="wrap">{heading(p['eyebrow'],p['title'],p['body'])}{products(lang)}</div></section>
+{claude_evidence(lang)}
+<section class="section wrap" id="expertise">{heading(s['eyebrow'],s['title'],s['body'])}{service_list(lang)}<div class="section-foot">{link(c['nav']['services'],SLUG[lang]['services'])}</div></section>
+<section class="section wrap">{heading(a['eyebrow'],a['title'])}{process(lang)}</section>
+<section class="company-strip wrap"><p class="eyebrow">{E(c['company']['eyebrow'])}</p><div><h2>{E(c['company']['title'])}</h2><p>{E(c['company']['body'])}</p>{link(c['nav']['company'],SLUG[lang]['company'])}</div></section>'''
+
+
+def page_hero(lang, key, title=None, body=None):
+    c = COPY[lang][key]
+    return f'<section class="page-hero wrap"><p class="eyebrow">{E(c["eyebrow"])}</p><h1>{E(title or c["title"])}</h1><p class="lede">{E(body if body is not None else c.get("body",c.get("intro","")))}</p></section>'
+
+
+def yanki(lang):
+    c = COPY[lang]['yanki']; tr = lang == 'tr'
+    features = ''.join(f'<div class="feature"><h3>{E(f["title"])}</h3><p>{E(f["body"])}</p></div>' for f in c['features'])
+    tech_title = 'Claude entegrasyonu ve API' if tr else 'Claude integration & API'
+    tech_body = ('Yansıtma için Anthropic Messages API ve claude-haiku-4-5-20251001 kullanılır. Yanıt biçimi ve alıntılar uygulamada kontrol edilir. Kriz sözcükleri için model çağrısından önce ayrı bir kural kontrolü yapılır. Bu kontrol tüm acil durumları tespit edemez.' if tr else 'Reflections use the Anthropic Messages API and claude-haiku-4-5-20251001. The application checks the response format and quotes. A separate rule checks for crisis words before calling the model. This check cannot identify every emergency.')
+    return page_hero(lang,'yanki') + f'''<section class="page-content wrap"><div class="yanki-layout"><div class="product-description"><h2>{E(c['cta'])}</h2>{features}<p class="tech-note">{E(c['safety'])}</p></div><div class="reflection-box"><div class="product-topline"><span class="product-name">yankı</span><span class="product-status">{E(c['status'])}</span></div><label for="girdi">{E(c['input_label'])}</label><textarea id="girdi" minlength="8" maxlength="600" rows="5" placeholder="{E(c['input_placeholder'],quote=True)}" aria-describedby="reflection-privacy"></textarea><button class="button" id="yansit" type="button">{E(c['input_button'])}{ARROW}</button><p class="form-status" id="durum" role="status" aria-live="polite"></p><div class="reflection-result" id="sonuc" aria-live="polite" hidden></div><p class="form-note" id="reflection-privacy">{E(c['privacy_note'])} <a href="{SLUG[lang]['privacy']}">{E(COPY[lang]['nav'].get('privacy',COPY[lang]['footer']['privacy']))} ↗</a></p></div></div><details class="technical" id="api"><summary>{tech_title}</summary><div class="technical-content"><p>{tech_body}</p><p><code>POST /api/reflect</code> · <code>{{"text": "…", "lang": "en|tr"}}</code> · 8–600 {'karakter' if tr else 'characters'}</p><p>{'İstek ve günlük kullanım sınırları uygulanır. Hizmet kullanılamıyorsa arayüz hata gösterir.' if tr else 'Request and daily usage limits apply. The interface shows an error when the service is unavailable.'}</p><p> · <a href="/api/health">{'Servis bilgisi' if tr else 'Service metadata'}</a></p></div></details></section>'''
+
+
+def content(lang, page):
+    c = COPY[lang]
+    if page == 'home': return home(lang)
+    if page == 'services':
+        pr = c.get('prices') or {}
+        ek_not = (f'<div class="tech-note">{E(pr.get("retainer",""))}</div>' if pr.get('retainer') else '') + \
+                 (f'<p class="legal-note">{E(pr.get("note",""))}</p>' if pr.get('note') else '')
+        return page_hero(lang,'services') + f'<section class="page-content wrap">{service_list(lang)}<div class="tech-note">{E(c["services"]["body"])}</div>{ek_not}{link(c["audit"]["cta"], SLUG[lang]["audit"])}</section>'
+    if page == 'products':
+        return page_hero(lang,'products') + f'<section class="page-content wrap">{products(lang)}</section>' + claude_evidence(lang)
+    if page == 'approach':
+        return page_hero(lang,'process',body=c['services']['body']) + f'<section class="page-content wrap">{process(lang)}</section>'
+    if page == 'company':
+        cc = c['company']
+        facts = ''.join(f'<div class="fact"><dt>{E(f["label"])}</dt><dd>{E(f["value"])}</dd></div>' for f in cc['facts'])
+        return page_hero(lang,'company') + f'<section class="page-content wrap"><dl class="facts">{facts}</dl><p class="legal-note">{E(cc["legal"])}</p><p class="legal-note">{E(cc["dates"])}</p><div class="technical"><h2>{"Yankı’da Claude kullanımı" if lang=="tr" else "Claude in Yankı"}</h2><p class="legal-note">{E(cc["model_use"])}</p>{link(c["nav"]["products"],SLUG[lang]["products"])}</div></section>'
+    if page == 'privacy':
+        sections = ''.join(f'<section class="prose-section"><h2>{E(s["title"])}</h2><p>{E(s["body"])}</p></section>' for s in c['privacy']['sections'])
+        return page_hero(lang,'privacy') + f'<div class="page-content wrap"><div class="prose">{sections}</div></div>'
+    if page == 'audit':
+        a = c['audit']
+        yontem = ''.join(f'<li>{E(m)}</li>' for m in a['method'])
+        bulgular = ''.join(f'<article class="step"><span class="step-number">0{i+1}</span><h3>{E(f["title"])}</h3><p>{E(f["body"])}</p></article>'
+                           for i, f in enumerate(a['findings']))
+        return page_hero(lang, 'audit') + f"""<section class="page-content wrap">
+<div class="prose"><h2>{E(a['method_title'])}</h2><ul class="method-list">{yontem}</ul>
+<p class="legal-note">{E(a['evidence_note'])}</p></div>
+<h2 class="findings-title">{E(a['findings_title'])}</h2><div class="approach-grid">{bulgular}</div>
+<div class="prose"><h2>{E(a['outcome_title'])}</h2><p>{E(a['outcome'])}</p></div>
+<div class="actions">{link(a['cta'], '#contact', 'button')}{link(c['nav']['services'], SLUG[lang]['services'])}</div>
+</section>"""
+    if page == 'terms':
+        t = c['terms']
+        parcalar = ''.join(f'<section class="prose-section"><h2>{E(s["title"])}</h2><p>{E(s["body"])}</p></section>'
+                           for s in t['sections'])
+        return page_hero(lang, 'terms') + f'<div class="page-content wrap"><div class="prose">{parcalar}</div><div class="actions">{link(t["cta"], "mailto:" + POSTA, "button")}</div></div>'
+    if page == 'yanki': return yanki(lang)
+    return f'<section class="not-found wrap"><p class="eyebrow">404</p><h1>{E(c["labels"]["not_found_title"])}</h1><p>{E(c["labels"]["not_found_body"])}</p>{link(c["labels"]["back"],SLUG[lang]["home"],"button")}</section>'
+
+
+def shell(lang, page, version):
+    c = COPY[lang]; other = 'tr' if lang == 'en' else 'en'; canonical = 'https://' + DOMAIN + SLUG[lang].get(page,'/404.html')
+    nav = ''.join(f'<a href="{SLUG[lang][key]}"'+(' aria-current="page"' if key==page else '')+f'>{E(c["nav"][key])}</a>' for key in ['services','products','approach','company'])
+    nav += f'<a class="lang" href="{SLUG[other].get(page,SLUG[other]["home"])}" lang="{other}" aria-label="{ "Türkçe" if other=="tr" else "English"}">{c["nav"]["language"]}</a><a class="nav-cta" href="#contact">{E(c["nav"]["contact"])}{ARROW}</a>'
+    title = c['meta']['title'] if page == 'home' else (c['yanki']['title'] + ' — Yankı' if page == 'yanki' else c['nav'].get(page,c['footer']['privacy'] if page == 'privacy' else '404') + ' — Mevlana Yalçın')
+    description = c['meta']['description'] if page in ['home','approach'] else c.get(page,{}).get('body',c['meta']['description'])
+    schema = {'@context':'https://schema.org','@type':'ProfessionalService','name':'Mevlana Yalçın','url':'https://'+DOMAIN,'description':c['meta']['description'],'email':POSTA,'founder':{'@type':'Person','name':'Mevlana Yalçın','jobTitle':'Founder & Principal Consultant','sameAs':[PROFIL, LINKEDIN]},"sameAs":[PROFIL, DEPO, LINKEDIN],'areaServed':['Global','TR'],'priceRange':'$$-$$$','contactPoint':{'@type':'ContactPoint','email':POSTA,'availableLanguage':['en','tr'],'contactType':'sales'},'address':{'@type':'PostalAddress','addressLocality':'Ankara','addressCountry':'TR'},'knowsAbout':['AI consulting','Product engineering','AI evaluation']}
+    alts = ''.join(f'<link rel="alternate" hreflang="{d}" href="https://{DOMAIN}{SLUG[d].get(page,SLUG[d]["home"])}">' for d in SLUG)
+    footer = f'''<footer class="footer wrap"><div class="footer-top">{brand(lang)}<p class="footer-copy">{E(c['footer']['description'])}<br>{E(c['footer']['location'])}</p></div><div class="footer-bottom"><span>© 2026 Mevlana Yalçın</span><nav class="footer-links" aria-label="{'Alt bağlantılar' if lang=='tr' else 'Footer'}"><a href="{SLUG[lang]['company']}">{E(c['footer']['legal'])}</a><a href="{SLUG[lang]['privacy']}">{E(c['footer']['privacy'])}</a><a href="{SLUG[lang]['terms']}">{E(c['terms']['title'])}</a><a href="{SLUG[lang]['audit']}">{E(c['audit']['eyebrow'])}</a><a href="{LINKEDIN}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="{PROFIL}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="{DEPO}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="mailto:{POSTA}" class="email-link">{POSTA}</a></nav></div></footer>'''
+    return f'''<!DOCTYPE html>
+<html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{E(title)}</title><meta name="description" content="{E(description,quote=True)}"><meta name="theme-color" content="#f4f3ee"><link rel="canonical" href="{canonical}">{alts}<link rel="alternate" hreflang="x-default" href="https://{DOMAIN}{SLUG['en'].get(page,'/')}"><meta property="og:type" content="website"><meta property="og:title" content="{E(title,quote=True)}"><meta property="og:description" content="{E(description,quote=True)}"><meta property="og:url" content="{canonical}"><meta property="og:site_name" content="Mevlana Yalçın"><meta name="twitter:card" content="summary_large_image"><meta property="og:image" content="{OG_GORSEL}"><meta name="twitter:image" content="{OG_GORSEL}"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css?v={version}"><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False)}</script></head>
+<body><a class="skip" href="#main">{'İçeriğe geç' if lang=='tr' else 'Skip to content'}</a><header class="header wrap">{brand(lang)}<nav class="nav" id="menu" aria-label="{'Ana menü' if lang=='tr' else 'Main navigation'}">{nav}</nav><button class="menu-toggle" id="menudugme" aria-expanded="false" aria-controls="menu">{'Menü' if lang=='tr' else 'Menu'}</button></header><main id="main">{content(lang,page)}{contact(lang)}</main>{footer}<script src="/assets/nav.js?v={version}" defer></script>{f'<script src="/assets/app.js?v={version}" defer></script>' if page=='yanki' else ''}</body></html>'''
+
+
+def gorseller(cikti):
+    """Marka gorsellerini uretir: og.png (1200x630), apple-touch-icon, favicon.ico."""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except Exception:
+        print('PIL yok: og gorseli/ico atlandi')
+        return
+    FON = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    zemin, metin, vurgu = (244, 243, 238), (34, 42, 39), (217, 85, 53)
+
+    def yazi(boyut):
+        return ImageFont.truetype(FON, boyut) if Path(FON).exists() else ImageFont.load_default()
+
+    g = Image.new('RGB', (1200, 630), zemin)
+    d = ImageDraw.Draw(g)
+    d.text((86, 140), "Mevlana Yalçın", font=yazi(84), fill=vurgu)
+    d.text((86, 258), "AI consulting with Claude", font=yazi(52), fill=metin)
+    d.text((86, 342), "Audits · integration · evaluation  ·  Ankara, Türkiye", font=yazi(30), fill=(90, 96, 92))
+    d.rectangle([86, 462, 156, 478], fill=vurgu)
+    d.text((86, 506), "mevlanayalcin.com.tr", font=yazi(30), fill=metin)
+    (cikti / 'assets').mkdir(parents=True, exist_ok=True)
+    g.save(cikti / 'assets' / 'og.png')
+
+    def kare(boyut):
+        i = Image.new('RGB', (boyut, boyut), (34, 42, 39))
+        dd = ImageDraw.Draw(i)
+        k = max(6, boyut // 5)
+        dd.text((k, int(boyut * 0.20)), "M", font=yazi(int(boyut * 0.60)), fill=(244, 243, 238))
+        dd.rectangle([boyut - k - 4, boyut - k - 4, boyut - 4, boyut - 4], fill=vurgu)
+        return i
+
+    kare(180).save(cikti / 'assets' / 'apple-touch-icon.png')
+    kare(64).save(cikti / 'favicon.ico')
+
+
+def main():
+    assets = KOK / 'site' / 'assets'
+    fingerprint = hashlib.sha256(b''.join(p.read_bytes() for p in sorted(assets.iterdir()) if p.is_file())).hexdigest()[:10]
+    if CIKTI.exists(): shutil.rmtree(CIKTI)
+    shutil.copytree(assets, CIKTI / 'assets')
+    for lang in SLUG:
+        for page, path in SLUG[lang].items():
+            target = CIKTI / path.strip('/') / 'index.html'
+            target.parent.mkdir(parents=True,exist_ok=True)
+            target.write_text(shell(lang,page,fingerprint),encoding='utf-8')
+    (CIKTI/'404.html').write_text(shell('en','404',fingerprint),encoding='utf-8')
+    import datetime
+    tarih = datetime.date.today().isoformat()
+    urls = sorted('https://'+DOMAIN+u for routes in SLUG.values() for u in routes.values())
+    (CIKTI/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{u}</loc><lastmod>{tarih}</lastmod></url>' for u in urls)+'</urlset>')
+    (CIKTI/'robots.txt').write_text(f'User-agent: *\nAllow: /\nSitemap: https://{DOMAIN}/sitemap.xml\n')
+    llms = '# Mevlana Yalçın — AI consulting with Claude\n\n'+COPY['en']['meta']['description']+'\n\n## Identity\n'+COPY['en']['company']['body']+'\n'+COPY['en']['company']['legal']+'\n'+COPY['en']['company']['dates']+'\n\n## Product\n- Yankı: live beta for personal reflection. Uses Anthropic Messages API. Not therapy or medical advice.\n\n## Pages\n'
+    for lang in SLUG:
+        for page,path in SLUG[lang].items(): llms += f'- [{lang}: {page}](https://{DOMAIN}{path})\n'
+    (CIKTI/'llms.txt').write_text(llms+'\nContact: '+POSTA+'\n')
+    gorseller(CIKTI)
+    (CIKTI/'favicon.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="6" fill="#222a27"/><path d="M7 37V11h7l10 14 10-14h7v26h-7V24L24 38 14 24v13Z" fill="#f4f3ee"/><path d="M34 33h7v7h-7z" fill="#d95535"/></svg>')
+    print(f'Built {len(urls)} bilingual pages, local assets, sitemap and 404.')
+
+if __name__ == '__main__': main()

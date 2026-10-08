@@ -56,7 +56,7 @@ def main() -> int:
             sorunlar.append("%s -> html lang=%s" % (yol, dil))
         if dil == "tr" and not yol.startswith("/tr/"):
             sorunlar.append("%s -> icerik Turkce ama yol /tr/ altında degil" % yol)
-        if "merhaba@mevlanayalcin.com.tr" not in govde:
+        if "info@mevlanayalcin.com.tr" not in govde:
             sorunlar.append("%s -> iletisim adresi yok" % yol)
         for blok in re.findall(r'<script type="application/ld\+json">(.*?)</script>', govde, re.S):
             try:

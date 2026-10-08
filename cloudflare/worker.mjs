@@ -239,9 +239,35 @@ export class Sinirlayici {
   }
 }
 
+// Eski urun ve danismanlik adresleri kalici baglantilar olarak korunur.
+const YONLENDIRME = {
+  "/how-it-works": "/process/", "/how-it-works/": "/process/",
+  "/safety": "/work/yanki/", "/safety/": "/work/yanki/",
+  "/api": "/work/yanki/#api", "/api/": "/work/yanki/#api",
+  "/work": "/products/", "/work/": "/products/",
+  "/tr/nasil": "/tr/surec/", "/tr/nasil/": "/tr/surec/",
+  "/tr/guvenlik": "/tr/calismalar/yanki/", "/tr/guvenlik/": "/tr/calismalar/yanki/",
+  "/tr/api": "/tr/calismalar/yanki/#api", "/tr/api/": "/tr/calismalar/yanki/#api",
+  "/tr/company": "/tr/kurumsal/", "/tr/company/": "/tr/kurumsal/",
+  "/tr/calismalar": "/tr/urunler/", "/tr/calismalar/": "/tr/urunler/",
+  "/tr/work/yanki": "/tr/calismalar/yanki/", "/tr/work/yanki/": "/tr/calismalar/yanki/",
+};
+
 export default {
   async fetch(request, env) {
-    const yol = new URL(request.url).pathname;
+    const adres = new URL(request.url);
+    const yol = adres.pathname;
+    if (["mevlanayalcin.com.tr", "www.mevlanayalcin.com.tr"].includes(adres.hostname)
+        && (adres.protocol !== "https:" || adres.hostname.startsWith("www."))) {
+      adres.protocol = "https:";
+      adres.hostname = "mevlanayalcin.com.tr";
+      return Response.redirect(adres.toString(), 308);
+    }
+    if (YONLENDIRME[yol]) {
+      const hedef = new URL(YONLENDIRME[yol], adres);
+      hedef.search = adres.search;
+      return Response.redirect(hedef.toString(), 301);
+    }
     if (yol === "/api/reflect") return handleReflect(request, env);
     if (yol === "/api/waitlist") return handleWaitlist(request, env);
     if (yol === "/api/health") return json({ ok: true, model: MODEL, butce: BUTCE_BIRIM, krizSozcuk: KRIZ.length });

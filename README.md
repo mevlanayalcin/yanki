@@ -1,52 +1,70 @@
-# Yankı
+# Mevlana Yalçın — AI danışmanlığı ve ürünler
 
-Duygusal günlük kontrol için bir yansıtan yapay zekâ eşlikçisi. Kullanıcı ne yaşadığını
-yazar; Yankı duyduğu duyguyu adlandırır, **kullanıcının kendi cümlesini birebir alıntılayarak**
-yansıtır ve önündeki bir saat için tek bir somut adım önerir.
+İngilizce ve Türkçe danışmanlık sitesi; hizmetler, çalışma biçimi, kurumsal bilgiler
+ve Claude kullanan Yankı ürünü. Yankı burada çalışan bir beta üründür.
+Anlatım AI danışmanlığı, doğrudan Claude entegrasyonu ve doğrulanabilir ürün
+üzerine kuruludur.
 
-**Yankı terapi değildir, teşhis koymaz, tıbbi tavsiye vermez.** Bu üçü arayüzde de,
-`safety` sayfasında da bu metinle yazar.
-
-## Bu depoda ne var
+## Kaynaklar
 
 | Yol | İçerik |
 |---|---|
-| `scripts/build.py` | Tüm sayfa metinlerinin tek kaynağı ve statik site üreticisi (`dist/`) |
-| `dist/assets/` | Tek stil dosyası, mobil menü, deneme kutusu |
-| `cloudflare/worker.mjs` | `POST /api/reflect`, `POST /api/waitlist`, `GET /api/health` |
-| `data/ornekler.json` | Uçtan **kaydedilmiş** cevaplar; sayfada basılan örnekler elle yazılmadı |
-| `wrangler.toml` | Workers yapılandırması (Assets + KV + Durable Object) |
+| `scripts/site_copy.py` | Her iki dilin içerikleri |
+| `scripts/build.py` | Sayfa iskeletleri, tek URL haritası, sitemap ve metadata |
+| `site/assets/` | CSS, istemci kodu, özgün SVG grafik ve yerel fontlar |
+| `dist/` | Üretilen yayın dosyaları; elle düzenlenmez |
+| `cloudflare/worker.mjs` | Yankı API, eski URL yönlendirmeleri ve tercih edilen domain |
+| `wrangler.toml` | Workers + Assets + KV + Durable Object yapılandırması |
+| `scripts/denet.py` | Mevcut canlı sayfa, metadata ve bağlantı denetimi |
 
-## Mimari ve bilinçli kısıtlar
-
-- Çıkarım: Anthropic Messages API, `claude-haiku-4-5-20251001`, JSON dönmek zorunda olan
-  kısıtlı bir sistem istemi.
-- **Kriz sözcükleri modele sorulmaz.** Sabit bir kelime listesi (TR + EN, normalize edilmiş)
-  model çağrısından *önce* çalışır; eşleşirse cevap kural tarafından üretilir ve yanıtta
-  `provider: "rule"`, `model: "crisis-list-v1"` yazar.
-- **Alıntı uydurulamaz.** Dönen `alinti` alanı kullanıcının metninde birebir geçmiyorsa
-  sunucu tarafında silinir. Modelin kendi kendine alıntı üretmesi sözleşmeye aykırıdır.
-- Bozuk veya eksik JSON **gösterilmez**: uç `malformed_answer` döner, arayüz "ulaşılamadı"
-  der. Kural tabanlı sahte bir yedek cevap yoktur.
-- Beta boyunca günlükler tarafımızda saklanmaz; bekleme listesi tek bir KV satırıdır.
-- Günlük bütçe koruması: ödemenin eşdeğeri birim sayacı tavana dayanırsa uç 503 döner.
-- Hız sınırı: IP başına 6 istek / 60 saniye (Durable Object).
-
-## Dağıtım
+## Geliştirme ve yayın
 
 ```bash
-python3 scripts/build.py                                  # dist/ uretir
-npx --yes wrangler@latest deploy                          # Workers + Assets
-npx --yes wrangler@latest secret put ANTHROPIC_API_KEY    # tek sir
+python3 scripts/build.py
+npx --yes wrangler@4.148.0 dev --local --port 4173 --host localhost --local-upstream localhost
 ```
 
-Ortam değişkeni gerekmez; sır `ANTHROPIC_API_KEY` olarak worker'a bağlıdır.
+Yerel preview için host belirtilir; aksi halde Wrangler üretim alan adını taklit
+ederken canonical yönlendirmesi localhost'a geri dönüp döngü oluşturabilir.
+Yerel geliştirmede üretim API sırrı kullanılmaz; Yankı'nın başarı yanıtı üretim
+üzerinde ayrıca doğrulanır. Anahtar dosyaya veya komut argümanına yazılmaz.
 
-## Durum
+```bash
+python3 scripts/build.py
+npx --yes wrangler@4.148.0 deploy --dry-run --keep-vars
+npx --yes wrangler@4.148.0 deploy --keep-vars
+python3 scripts/denet.py https://mevlanayalcin.com.tr
+```
 
-Yayında: bu site, `/api/reflect`, bekleme listesi.
-Geliştiriliyor: hesap, günlük geçmişi, hatırlatmalar.
-Planlanan: bir klinik uzman tarafından değerlendirilmiş yansıtma protokolü, ikinci dil seti, mobil uygulamalar (tarih yok).
+Üretim ortamında mevcut `ANTHROPIC_API_KEY` secret korunur. `ASSETS`, `WAITLIST`
+ve `SINIRLAYICI` bindingleri gerekir. Statik font/CSS/JS/grafikler Worker'ı
+çalıştırmadan servis edilir; HTML ve API istekleri Worker üzerinden geçer.
+Eski yollar, özellikle `/tr/company/`, çalışan yeni sayfalara yönlendirilir.
 
-Tek kişi, Ankara. Tescilli tüzel kişilik yok, dışarıdan finansman alınmadı, ücretli müşteri yok.
-İletişim: merhaba@mevlanayalcin.com.tr
+## Yankı sınırları
+
+- Anthropic Messages API, `claude-haiku-4-5-20251001` modeli.
+- Yanıtın temel biçimi ve alıntının normalize edilmiş metin içinde bulunması
+  kontrol edilir. Bu kontroller tüm model hatalarını önleyemez.
+- Sabit kriz sözcükleri modeli çağırmadan yardım metni döndürebilir; tüm acil
+  durumları tespit eden bir sistem değildir. Yankı terapi veya tıbbi hizmet değildir.
+- Başarısız model çağrısında sahte yedek cevap gösterilmez.
+- Uygulama günlük metinlerini ve yanıtları bir günlük veritabanına yazmaz.
+  Sağlayıcıların veri işleme koşulları ve operasyonel kayıtları ayrıca geçerlidir.
+- KV üzerinde kullanım sayacı ve isteğe bağlı bekleme listesi bilgileri tutulur.
+  Bekleme kaydı adresle birlikte kayıt zamanı, dil ve kaynak metadatası içerir.
+- Günlük bütçe sayacı yaklaşık korumadır; atomik finansal tavan veya bakiye
+  doğrulaması değildir. Hız sınırı Durable Object ile uygulanır.
+- `/api/health` servis metadatasıdır; gerçek Anthropic bağlantı testi değildir.
+
+## Kimlik
+
+Kurucu: Mevlana Yalçın, Ankara. Ayrı tescilli tüzel kişilik henüz yok.
+Domain başlangıcı Eylül 2023, sitedeki danışmanlık ve Yankı başlangıcı Ekim 2026;
+bu tarihler şirket tescil tarihi olarak sunulmaz. Site müşteri, yatırım, gelir,
+partnerlik veya startup programı kabulü hakkında doğrulanmamış iddia içermez.
+
+İletişim: info@mevlanayalcin.com.tr
+
+Manrope fontu SIL Open Font License ile yerel olarak servis edilir;
+lisans `site/assets/OFL-Manrope.txt` içindedir.

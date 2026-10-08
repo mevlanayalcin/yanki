@@ -21,6 +21,7 @@ id = "64a65c721f1944bd864b290958390293"
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "404-page"
+run_worker_first = ["/*", "!/assets/*", "!/favicon.svg"]
 
 [[routes]]
 pattern = "mevlanayalcin.com.tr"

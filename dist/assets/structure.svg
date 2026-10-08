@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="620" viewBox="0 0 620 620" fill="none">
+<defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" stroke="#b3c2a5" stroke-opacity=".07"/></pattern><linearGradient id="face" x1="139" y1="165" x2="446" y2="470" gradientUnits="userSpaceOnUse"><stop stop-color="#e2ebaa"/><stop offset="1" stop-color="#afb984"/></linearGradient></defs>
+<path fill="#202c27" d="M0 0h620v620H0z"/><path fill="url(#grid)" d="M0 0h620v620H0z"/>
+<circle cx="310" cy="300" r="240" stroke="#647665" stroke-opacity=".23"/><circle cx="310" cy="300" r="195" stroke="#647665" stroke-opacity=".2"/>
+<g transform="translate(30 0)"><path d="m108 375 100-230 218 45 39 256-39 37-179-33-42 40-39-8 53-50-73-13-39 37Z" fill="#0f1813" fill-opacity=".4"/>
+<path d="m121 338 100-215 214 40 42 258-41 33-172-34-45 43-40-8 57-54-73-14-42 39Z" fill="#6c7957"/>
+<path d="m121 338 100-215 214 40-30 36-157-30-49 106 95 18 19-42 41 8-57 131-174-34Z" fill="url(#face)"/>
+<path d="m221 123 214 40-30 36-157-30-27-46Z" fill="#e6eebc"/>
+<path d="m121 338 42-51 115 21 19 82-174-34-2-18Z" fill="#8e9d6d"/>
+<path d="m199 275 49-106 37 47-25 56 52 10-18 11-95-18Z" fill="#b0bd86"/>
+<path d="m294 293 19-42 41 8-16 39-44-5Z" fill="#e9efbc"/>
+<path d="m313 251 41 8 17 89-36 9-22-106Z" fill="#9aa977"/>
+<path d="m435 163 42 258-41 33-31-255 30-36Z" fill="#6f805b"/>
+<path d="m405 199 31 255-172-34 47-42 82 16-19-164 31-31Z" fill="#c5d498"/>
+<path d="m264 420 47-42 82 16 43 60-172-34Z" fill="#9fac77"/>
+<path d="m238 369 40-61 54 11-26 45-41 55-46 44-40-8 59-86Z" fill="#dfe8a9"/>
+<path d="m219 463 46-44 1 16-47 47-40-9v-18l40 8Z" fill="#879767"/>
+<path d="m121 338 2 18 40 31v-18l-42-31Z" fill="#7e9063"/>
+<path d="m324 302 29-52 49 9-30 53-48-10Z" fill="#ed734e"/>
+<path d="m324 302 48 10 7 52-48-10-7-52Z" fill="#c4492c"/>
+<path d="m372 312 30-53 7 52-30 53-7-52Z" fill="#a03725"/>
+</g>
+<g stroke="#92a383" stroke-width="1"><path d="M33 38h14m-7-7v14M579 38h14m-7-7v14M33 536h14m-7-7v14M579 536h14m-7-7v14"/></g>
+<circle cx="515" cy="113" r="3" fill="#d95535"/><path d="M518 113h45" stroke="#778969" stroke-width=".6"/>
+</svg>
