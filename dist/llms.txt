@@ -1,32 +1,36 @@
-# Yankı
+# Mevlana Yalçın — AI consulting (mevlanayalcin.com.tr)
 
-> Yankı mirrors your own words back, names what you appear to feel, and offers one small next step. It is a companion, not therapy, and it never invents a feeling you did not put there.
+> I audit what large-language-model traffic actually costs and who serves it: measured price, latency and SLA behaviour per provider, the routing decisions eating your margin, and the leak paths on your side of the wire.
 
-Yankı is an emotional check-in companion, not therapy, not a diagnosis, not a medical device.
-Reflections are produced by Anthropic's Messages API with claude-haiku-4-5-20251001 under a JSON-only prompt;
-crisis wording is decided by a rule list before the model is called.
+Independent consultant in Ankara. Fixed-scope audits of LLM cost, latency, SLA behaviour
+and supply-chain/security exposure. No capacity is resold, so findings carry no commission.
+Claude is used in production on the case study below.
 
 ## Pages
 
-- [Product](https://mevlanayalcin.com.tr/): what it does and a live demo box
-- [How it works](https://mevlanayalcin.com.tr/how-it-works/): the five steps of a check-in
-- [Safety](https://mevlanayalcin.com.tr/safety/): explicit limits, emergency notice (112 in Türkiye)
-- [Privacy](https://mevlanayalcin.com.tr/privacy/): text is not stored during the beta; no cookie set by us
-- [Company](https://mevlanayalcin.com.tr/company/): identity, roadmap with status, verification links
-- [API](https://mevlanayalcin.com.tr/api/): POST /api/reflect contract, errors, rate limit, budget guard
+- [Consulting](https://mevlanayalcin.com.tr/): positioning, what lands on the table
+- [Services](https://mevlanayalcin.com.tr/services/): three packages with scope, duration and price anchors
+- [Process](https://mevlanayalcin.com.tr/process/): five steps, read-only measurement first
+- [Work](https://mevlanayalcin.com.tr/work/): method and findings of an inference exchange audit
+- [Case study — Yankı](https://mevlanayalcin.com.tr/work/yanki/): live Claude product, demo box and API contract
+- [Company](https://mevlanayalcin.com.tr/company/): identity, verification links, questions worth asking first
+- [Privacy](https://mevlanayalcin.com.tr/privacy/): site and client-data handling, sub-processors, KVKK
 
 ### Türkçe
 
-- [Ürün](https://mevlanayalcin.com.tr/tr/)
-- [Nasıl çalışır](https://mevlanayalcin.com.tr/tr/nasil/)
-- [Güvenlik](https://mevlanayalcin.com.tr/tr/guvenlik/)
-- [Gizlilik](https://mevlanayalcin.com.tr/tr/gizlilik/)
+- [Danışmanlık](https://mevlanayalcin.com.tr/tr/)
+- [Hizmetler](https://mevlanayalcin.com.tr/tr/hizmetler/)
+- [Süreç](https://mevlanayalcin.com.tr/tr/surec/)
+- [Çalışmalar](https://mevlanayalcin.com.tr/tr/calismalar/)
+- [Vaka — Yankı](https://mevlanayalcin.com.tr/tr/calismalar/yanki/)
 - [Kurumsal](https://mevlanayalcin.com.tr/tr/kurumsal/)
-- [API](https://mevlanayalcin.com.tr/tr/api/)
+- [Gizlilik](https://mevlanayalcin.com.tr/tr/gizlilik/)
 
 ## Facts kept separate on purpose
 
 - mevlanayalcin.com.tr is a personal domain held since September 2023.
-- Product work on Yankı began October 2026.
-- One person, bootstrapped, Ankara. No registered legal entity, no funding raised, no customers yet.
-- Waitlist only: sign-up at the site; deletion by email to merhaba@mevlanayalcin.com.tr.
+- The consulting practice and the Yankı product both began in October 2026.
+- One person, Ankara. No registered legal entity yet; a sole proprietorship is opened with the first paid engagement.
+- Yankı: Anthropic Messages API, claude-haiku-4-5-20251001, JSON-only output enforced server-side, rule-based crisis handling, no session storage during the beta.
+- Live endpoints: POST /api/reflect, POST /api/waitlist, GET /api/health.
+- Contact: merhaba@mevlanayalcin.com.tr

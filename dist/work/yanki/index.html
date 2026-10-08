@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Yankı — a live Claude product · Mevlana Yalçın</title>
+<meta name="description" content="Kept as a case study, not as this site&#x27;s identity: it is the clearest evidence that the Claude integration described above is real and running." />
+<link rel="canonical" href="https://mevlanayalcin.com.tr/work/yanki/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Yankı — a live Claude product · Mevlana Yalçın" />
+<meta property="og:description" content="Kept as a case study, not as this site&#x27;s identity: it is the clearest evidence that the Claude integration described above is real and running." />
+<meta property="og:url" content="https://mevlanayalcin.com.tr/work/yanki/" />
+<meta property="og:site_name" content="mevlanayalcin.com.tr" />
+<meta name="twitter:card" content="summary" />
+<link href="/assets/site.css?v=2" rel="stylesheet" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"ProfessionalService","@id":"https://mevlanayalcin.com.tr/#org","name":"Mevlana Yalçın — AI consulting","alternateName":"Yankı","url":"https://mevlanayalcin.com.tr/","email":"merhaba@mevlanayalcin.com.tr","description":"I audit what large-language-model traffic actually costs and who serves it: measured price, latency and SLA behaviour per provider, the routing decisions eating your margin, and the leak paths on your side of the wire.","founder":{"@type":"Person","name":"Mevlana Yalçın"},"numberOfEmployees":{"@type":"QuantitativeValue","value":1},"areaServed":["TR","Global"],"address":{"@type":"PostalAddress","addressLocality":"Ankara","addressCountry":"TR"},"codeRepository":"https://github.com/mevlanayalcin/yanki","makesOffer":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"Inference audit"},"priceSpecification":{"@type":"PriceSpecification","priceCurrency":"USD","price":"4500"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Routing & cost architecture"},"priceSpecification":{"@type":"PriceSpecification","priceCurrency":"USD","price":"9000"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Advisory retainer"},"priceSpecification":{"@type":"PriceSpecification","priceCurrency":"USD","price":"1200"}}]},{"@type":"SoftwareApplication","name":"Yankı","url":"https://mevlanayalcin.com.tr/work/yanki/","applicationCategory":"LifestyleApplication","operatingSystem":"Web","inLanguage":["en","tr"],"publisher":{"@id":"https://mevlanayalcin.com.tr/#org"}}]}</script>
+</head><body>
+<header class="ust">
+  <a class="kul" href="/">Mevlana Yalçın<span class="nokta">.</span></a>
+  <nav class="menu" id="menu"><a href="/">Consulting</a>
+      <a href="/services/">Services</a>
+      <a href="/process/">Process</a>
+      <a href="/work/">Work</a>
+      <a href="/company/">Company</a>
+      <a href="/privacy/">Privacy</a>
+      <a class="dil" href="/tr/">Türkçe</a></nav>
+  <button class="menudugme" id="menudugme" aria-expanded="false" aria-controls="menu">Menu</button>
+</header>
+<main><section class="ku"><p class="ustbaslik">Case study · live</p><h1>Yankı — a live Claude product</h1><p class="alt">Kept as a case study, not as this site&#x27;s identity: it is the clearest evidence that the Claude integration described above is real and running.</p><p>You write what happened and how it landed. Yankı names the feeling it hears, quotes your own sentence unchanged, and offers one step for the next hour. It is a companion, not therapy: no diagnosis, no medical advice, no clinical claim.</p></section><section class="ku"><div class="kutu" id="kutu"><h2 class="kutuBaslik">Try one reflection</h2><p class="kutuAlti">This box calls the same endpoint this page describes. It does not store what you type.</p><textarea id="girdi" rows="3" placeholder="Write a sentence about your day and how it landed…"></textarea><div class="kutuEylem"><button id="yansit">Reflect</button><span id="durum" aria-live="polite"></span></div><div id="sonuc" hidden></div></div></section><section class="ku"><h2>Captured answers</h2><p class="alt">Verbatim responses from /api/reflect, not rewritten for the page.</p><div class="ornekler"><article class="ornek"><p class="soru">“My manager cancelled our review meeting again and I have been smiling about it all day, but my chest is tight.”</p><dl><dt>Feeling</dt><dd>anxiety <span class="siddet">3</span></dd><dt>Reflection</dt><dd>You&#x27;re relieved the meeting is postponed, yet something in your body is signaling worry underneath that smile.</dd><dt>Your words</dt><dd>my chest is tight</dd><dt>Next step</dt><dd>Take three slow, deep breaths and notice what your body needs right now.</dd></dl><p class="motor">anthropic · claude-haiku-4-5-20251001</p></article><article class="ornek"><p class="soru">“I finally finished the thing I kept avoiding and instead of feeling light I just feel flat.”</p><dl><dt>Feeling</dt><dd>flat <span class="siddet">3</span></dd><dt>Reflection</dt><dd>You pushed through the avoidance and completed it, yet the expected lightness didn&#x27;t arrive—just emptiness instead.</dd><dt>Your words</dt><dd>I just feel flat</dd><dt>Next step</dt><dd>Take a short walk outside or call someone you trust.</dd></dl><p class="motor">anthropic · claude-haiku-4-5-20251001</p></article></div></section><section class="ku"><h2>How it is built</h2><ul class="maddeler"><li>Anthropic Messages API, model claude-haiku-4-5-20251001, a system prompt that must return a single JSON object.</li><li>The server checks the shape. A malformed answer is discarded and the interface says it is unavailable — there is no rule-based fake standing in for the model.</li><li>Crisis wording is decided by a fixed word list before the model is called; a match replaces the answer with helpline text.</li><li>A quote the model invents is dropped: if the returned quote does not appear verbatim in the user&#x27;s text, it is not shown.</li><li>Nothing is stored on our side during the beta. The waitlist is one key in Cloudflare KV.</li><li>Rate limit 6 requests / 60 s per IP, plus a daily budget guard that returns 503 before the balance runs out.</li></ul></section><section class="ku"><h2>What Yankı is not</h2><ul class="maddeler"><li>Not therapy, not a diagnosis, not a medical device. It has no clinical claim and asks none.</li><li>It does not advise on medication, dosage or stopping treatment.</li><li>In immediate danger, or thinking of harming yourself: call 112 in Türkiye or your local emergency number. The banner is a rule, not a model judgement.</li><li>Sessions train no model, by us or by a vendor. Text goes to Anthropic&#x27;s API and is retained there only under their API data terms.</li></ul><p class="vurgu">Turkish: 112 · English: your local emergency number</p></section><section class="ku" id="api"><h2>API contract</h2><p class="alt">One public endpoint, the same one the demo box above calls. Treat it as a sample integration, not infrastructure.</p>
+<table class="sozlesme">
+<tr><th>Method</th><td>POST</td></tr>
+<tr><th>Path</th><td><code>/api/reflect</code></td></tr>
+<tr><th>Request</th><td><code>{"text": string, "lang": "en"|"tr"}</code> — 8–600 characters</td></tr>
+<tr><th>Response</th><td><code>{duygu, siddet, yansitma, alinti, adim, disclaimer, provider, model, cache}</code></td></tr>
+<tr><th>Errors</th><td><code>bad_request</code> 400 · <code>too_long</code> 413 · <code>busy</code> 429 · <code>daily_budget</code> 503 · <code>upstream</code> 502</td></tr>
+<tr><th>Rate limit</th><td>6 requests / 60 s per IP (Durable Object)</td></tr>
+<tr><th>Budget</th><td>A daily payment-equivalent cap stops the endpoint before the balance runs out</td></tr>
+<tr><th>Crisis wording</th><td>Decided by a rule list before the model call; the answer is replaced by helpline text</td></tr>
+</table>
+</section><section class="ku"><h2>Status</h2><ul class="maddeler"><li>Live: this site, POST /api/reflect, the waitlist with a real deletion path.</li><li>Not built yet: accounts, history, reminders. No date committed.</li><li>Not started: clinical review of the reflection protocol; no partner signed.</li></ul><ul class="dogrulama"><li><a href="https://github.com/mevlanayalcin/yanki">Source of the live product</a></li><li><a href="https://mevlanayalcin.com.tr/api/health">Health of the running endpoint</a></li><li><a href="https://mevlanayalcin.com.tr/llms.txt">Machine-readable site summary</a></li><li><a href="https://mevlanayalcin.com.tr/robots.txt">Crawl policy and sitemap</a></li></ul></section></main>
+<footer class="alt">
+  <p class="altbilgi">Mevlana Yalçın · AI consulting · Ankara, Türkiye · merhaba@mevlanayalcin.com.tr · independent consultant, no capacity resold</p>
+  <p class="altlinkler"><a href="https://github.com/mevlanayalcin/yanki">GitHub</a> · <a href="/llms.txt">llms.txt</a> · <a href="/api/health">API</a></p>
+</footer>
+<script src="/assets/nav.js?v=2" defer></script>
+<script src="/assets/app.js?v=2" defer></script>
+</body></html>

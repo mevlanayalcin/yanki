@@ -239,12 +239,31 @@ export class Sinirlayici {
   }
 }
 
+// Eski Yanki urun yollari -> yeni danismanlik yapisi. 301: arama motoru ve paylasim
+// bağlantilari kirilmadan yeni sayfaya tasinir.
+const YONLENDIRME = {
+  "/how-it-works": "/process/",
+  "/how-it-works/": "/process/",
+  "/safety": "/work/yanki/",
+  "/safety/": "/work/yanki/",
+  "/api": "/work/yanki/#api",
+  "/api/": "/work/yanki/#api",
+  "/tr/nasil": "/tr/surec/",
+  "/tr/nasil/": "/tr/surec/",
+  "/tr/guvenlik": "/tr/calismalar/yanki/",
+  "/tr/guvenlik/": "/tr/calismalar/yanki/",
+  "/tr/api": "/tr/calismalar/yanki/#api",
+  "/tr/api/": "/tr/calismalar/yanki/#api",
+};
+
 export default {
   async fetch(request, env) {
     const yol = new URL(request.url).pathname;
     if (yol === "/api/reflect") return handleReflect(request, env);
     if (yol === "/api/waitlist") return handleWaitlist(request, env);
     if (yol === "/api/health") return json({ ok: true, model: MODEL, butce: BUTCE_BIRIM, krizSozcuk: KRIZ.length });
+    const hedef = YONLENDIRME[yol];
+    if (hedef) return Response.redirect(new URL(hedef, request.url), 301);
     return env.ASSETS.fetch(request);
   },
 };

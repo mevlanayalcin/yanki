@@ -108,3 +108,19 @@ footer.alt .altbilgi, footer.alt .altlinkler { max-width: 90ch; }
   .menudugme { display: block; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* --- danismanlik sayfalari: paket kartlari, vaka kartlari, fiyat etiketi --- */
+.paketler { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-top: 10px; }
+.paket { background: var(--kart); border: 1px solid rgba(15, 61, 62, 0.12); border-radius: var(--radius); padding: 18px 20px; }
+.paket h3 { font-size: 20px; margin-bottom: 8px; }
+.paketMeta { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; margin: 0 0 10px; }
+.etiket { display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--soluk); border: 1px solid rgba(15, 61, 62, 0.2); border-radius: 999px; padding: 3px 9px; }
+.fiyat { font-family: var(--serif); font-size: 18px; color: var(--vurgu); }
+.paket .maddeler { padding-left: 18px; margin: 0 0 10px; }
+.paket .maddeler li { font-size: 15px; margin-bottom: 7px; }
+.cikti { font-size: 14.5px; color: var(--cizgi); border-top: 1px dashed rgba(15, 61, 62, 0.22); padding-top: 10px; margin: 0; }
+.vaka { background: var(--kart); border: 1px solid rgba(15, 61, 62, 0.12); border-radius: var(--radius); padding: 18px 20px; }
+.vaka h3 { font-size: 19px; margin: 6px 0 8px; }
+.vaka p { font-size: 15px; }
+.vaka .etiket { margin-bottom: 4px; }
+.ku .paketler + p, .ku ol.adimlar { max-width: 74ch; }
