@@ -12,6 +12,8 @@ Anlatım AI danışmanlığı, doğrudan Claude entegrasyonu ve doğrulanabilir 
 | `scripts/site_copy.py` | Her iki dilin içerikleri |
 | `scripts/build.py` | Sayfa iskeletleri, tek URL haritası, sitemap ve metadata |
 | `site/assets/` | CSS, istemci kodu, özgün SVG grafik ve yerel fontlar |
+| `site/brand/` | Türkçe/İngilizce sosyal kartlar ve uygulama ikonları |
+| `scripts/build_social_assets.py` | Marka varlıklarını mevcut Pillow ile yeniden üretir |
 | `dist/` | Üretilen yayın dosyaları; elle düzenlenmez |
 | `cloudflare/worker.mjs` | Yankı API, eski URL yönlendirmeleri ve tercih edilen domain |
 | `wrangler.toml` | Workers + Assets + KV + Durable Object yapılandırması |
@@ -40,6 +42,16 @@ python3 scripts/denet.py https://mevlanayalcin.com.tr
 ve `SINIRLAYICI` bindingleri gerekir. Statik font/CSS/JS/grafikler Worker'ı
 çalıştırmadan servis edilir; HTML ve API istekleri Worker üzerinden geçer.
 Eski yollar, özellikle `/tr/company/`, çalışan yeni sayfalara yönlendirilir.
+
+İletişim: `/contact/` ve `/tr/iletisim/`. Kimlik bağlantıları kurucunun gerçek
+GitHub ve LinkedIn profillerine gider. Projeye özel ticari koşullar yazılı
+teklif/sözleşmede belirlenir; site doğrulanmamış fiyat, müşteri veya araştırma
+bulgusu yayımlamaz.
+
+Sosyal görselleri değiştirmek için `python3 scripts/build_social_assets.py`, ardından
+`python3 scripts/build.py` çalıştırılır. Normal site üretimi Pillow gerektirmez;
+hazır marka dosyalarını kopyalar. `CONTENT_UPDATED`, gerçek içerik güncellemelerinde
+değiştirilir; yalnız yeniden üretim sitemap tarihini ilerletmez.
 
 ## Yankı sınırları
 

@@ -17,10 +17,10 @@ POSTA = 'info@' + DOMAIN
 DEPO = 'https://github.com/mevlanayalcin/yanki'
 PROFIL = 'https://github.com/mevlanayalcin'
 LINKEDIN = 'https://www.linkedin.com/in/mevlanayalcin'
-OG_GORSEL = 'https://mevlanayalcin.com.tr/assets/og.png'
+CONTENT_UPDATED = '2026-10-08'
 SLUG = {
-    'en': {'home': '/', 'services': '/services/', 'products': '/products/', 'approach': '/process/', 'company': '/company/', 'privacy': '/privacy/', 'yanki': '/work/yanki/', 'audit': '/work/inference-audit/', 'terms': '/terms/'},
-    'tr': {'home': '/tr/', 'services': '/tr/hizmetler/', 'products': '/tr/urunler/', 'approach': '/tr/surec/', 'company': '/tr/kurumsal/', 'privacy': '/tr/gizlilik/', 'yanki': '/tr/calismalar/yanki/', 'audit': '/tr/calismalar/inference-denetimi/', 'terms': '/tr/sartlar/'},
+    'en': {'home': '/', 'services': '/services/', 'products': '/products/', 'approach': '/process/', 'company': '/company/', 'privacy': '/privacy/', 'yanki': '/work/yanki/', 'contact': '/contact/', 'terms': '/terms/'},
+    'tr': {'home': '/tr/', 'services': '/tr/hizmetler/', 'products': '/tr/urunler/', 'approach': '/tr/surec/', 'company': '/tr/kurumsal/', 'privacy': '/tr/gizlilik/', 'yanki': '/tr/calismalar/yanki/', 'contact': '/tr/iletisim/', 'terms': '/tr/sartlar/'},
 }
 E = html.escape
 ARROW = '<span class="arrow" aria-hidden="true">↗</span>'
@@ -44,9 +44,6 @@ def service_list(lang):
     rows = []
     for s in COPY[lang]['services']['items']:
         tags = ''.join(f'<span class="tag">{E(t)}</span>' for t in s['tags'])
-        fiyat = (COPY[lang].get('prices') or {}).get('items', {}).get(s['number'], '')
-        if fiyat:
-            tags += f'<span class="tag price">{E(fiyat)}</span>'
         label = f'{s["title"]} — {COPY[lang]["contact"]["cta"]}'
         rows.append(f'<article class="service-row"><span class="service-number">{s["number"]}</span><h3>{E(s["title"])}</h3><div class="service-body"><p>{E(s["body"])}</p><div class="tags">{tags}</div></div><a class="row-arrow" href="#contact" aria-label="{E(label, quote=True)}">{ARROW}</a></article>')
     return '<div class="service-list">' + ''.join(rows) + '</div>'
@@ -119,10 +116,7 @@ def content(lang, page):
     c = COPY[lang]
     if page == 'home': return home(lang)
     if page == 'services':
-        pr = c.get('prices') or {}
-        ek_not = (f'<div class="tech-note">{E(pr.get("retainer",""))}</div>' if pr.get('retainer') else '') + \
-                 (f'<p class="legal-note">{E(pr.get("note",""))}</p>' if pr.get('note') else '')
-        return page_hero(lang,'services') + f'<section class="page-content wrap">{service_list(lang)}<div class="tech-note">{E(c["services"]["body"])}</div>{ek_not}{link(c["audit"]["cta"], SLUG[lang]["audit"])}</section>'
+        return page_hero(lang,'services') + f'<section class="page-content wrap">{service_list(lang)}<div class="tech-note">{E(c["services"]["body"])}</div>{link(c["nav"]["contact"],SLUG[lang]["contact"])}</section>'
     if page == 'products':
         return page_hero(lang,'products') + f'<section class="page-content wrap">{products(lang)}</section>' + claude_evidence(lang)
     if page == 'approach':
@@ -130,22 +124,13 @@ def content(lang, page):
     if page == 'company':
         cc = c['company']
         facts = ''.join(f'<div class="fact"><dt>{E(f["label"])}</dt><dd>{E(f["value"])}</dd></div>' for f in cc['facts'])
-        return page_hero(lang,'company') + f'<section class="page-content wrap"><dl class="facts">{facts}</dl><p class="legal-note">{E(cc["legal"])}</p><p class="legal-note">{E(cc["dates"])}</p><div class="technical"><h2>{"Yankı’da Claude kullanımı" if lang=="tr" else "Claude in Yankı"}</h2><p class="legal-note">{E(cc["model_use"])}</p>{link(c["nav"]["products"],SLUG[lang]["products"])}</div></section>'
+        return page_hero(lang,'company') + f'<section class="page-content wrap"><dl class="facts">{facts}</dl><p class="legal-note">{E(cc["legal"])}</p><p class="legal-note">{E(cc["dates"])}</p><div class="profile-links">{link("GitHub",PROFIL,external=True)}{link("LinkedIn",LINKEDIN,external=True)}{link(c["nav"]["contact"],SLUG[lang]["contact"])}</div><div class="technical"><h2>{"Yankı’da Claude kullanımı" if lang=="tr" else "Claude in Yankı"}</h2><p class="legal-note">{E(cc["model_use"])}</p>{link(c["nav"]["products"],SLUG[lang]["products"])}</div></section>'
     if page == 'privacy':
         sections = ''.join(f'<section class="prose-section"><h2>{E(s["title"])}</h2><p>{E(s["body"])}</p></section>' for s in c['privacy']['sections'])
         return page_hero(lang,'privacy') + f'<div class="page-content wrap"><div class="prose">{sections}</div></div>'
-    if page == 'audit':
-        a = c['audit']
-        yontem = ''.join(f'<li>{E(m)}</li>' for m in a['method'])
-        bulgular = ''.join(f'<article class="step"><span class="step-number">0{i+1}</span><h3>{E(f["title"])}</h3><p>{E(f["body"])}</p></article>'
-                           for i, f in enumerate(a['findings']))
-        return page_hero(lang, 'audit') + f"""<section class="page-content wrap">
-<div class="prose"><h2>{E(a['method_title'])}</h2><ul class="method-list">{yontem}</ul>
-<p class="legal-note">{E(a['evidence_note'])}</p></div>
-<h2 class="findings-title">{E(a['findings_title'])}</h2><div class="approach-grid">{bulgular}</div>
-<div class="prose"><h2>{E(a['outcome_title'])}</h2><p>{E(a['outcome'])}</p></div>
-<div class="actions">{link(a['cta'], '#contact', 'button')}{link(c['nav']['services'], SLUG[lang]['services'])}</div>
-</section>"""
+    if page == 'contact':
+        cp = c['contact_page']
+        return page_hero(lang,'contact_page') + f'<section class="page-content wrap contact-page"><div class="contact-card"><span class="eyebrow">{E(cp["email_label"])}</span><a class="contact-address" href="mailto:{POSTA}">{POSTA}</a><dl class="contact-facts"><dt>{E(cp["founder_label"])}</dt><dd>Mevlana Yalçın</dd><dt>{E(cp["timezone_label"])}</dt><dd>{E(cp["timezone"])}</dd></dl><div class="profile-links">{link(cp["profile"],PROFIL,external=True)}{link(cp["linkedin"],LINKEDIN,external=True)}{link(cp["source"],DEPO,external=True)}</div></div><div class="contact-explanation"><h2>{E(cp["write_title"])}</h2><p>{E(cp["write_body"])}</p><h2>{E(cp["next_title"])}</h2><p>{E(cp["next_body"])}</p>{link(cp["terms_link"],SLUG[lang]["terms"])}</div></section>'
     if page == 'terms':
         t = c['terms']
         parcalar = ''.join(f'<section class="prose-section"><h2>{E(s["title"])}</h2><p>{E(s["body"])}</p></section>'
@@ -155,53 +140,46 @@ def content(lang, page):
     return f'<section class="not-found wrap"><p class="eyebrow">404</p><h1>{E(c["labels"]["not_found_title"])}</h1><p>{E(c["labels"]["not_found_body"])}</p>{link(c["labels"]["back"],SLUG[lang]["home"],"button")}</section>'
 
 
+
+def page_name(lang,page):
+    if page == 'home': return 'Ana sayfa' if lang == 'tr' else 'Home'
+    if page == 'yanki': return 'Yankı'
+    if page == 'privacy': return COPY[lang]['footer']['privacy']
+    return COPY[lang]['nav'].get(page,page)
+
+
+def breadcrumbs(lang,page):
+    if page in ('home','404'): return ''
+    return f'<nav class="breadcrumbs wrap" aria-label="{"Sayfa yolu" if lang=="tr" else "Breadcrumb"}"><a href="{SLUG[lang]["home"]}">{page_name(lang,"home")}</a><span aria-hidden="true">/</span><span aria-current="page">{E(page_name(lang,page))}</span></nav>'
+
+
+def structured_data(lang,page,canonical):
+    root='https://'+DOMAIN
+    founder={'@type':'Person','@id':root+'/#founder','name':'Mevlana Yalçın','jobTitle':'Founder and software engineer','url':root+SLUG[lang]['company'],'sameAs':[PROFIL,LINKEDIN]}
+    service={'@type':'ProfessionalService','@id':root+'/#business','name':'Mevlana Yalçın','url':root,'description':COPY[lang]['meta']['description'],'email':POSTA,'founder':{'@id':root+'/#founder'},'address':{'@type':'PostalAddress','addressLocality':'Ankara','addressCountry':'TR'},'contactPoint':{'@type':'ContactPoint','email':POSTA,'url':root+SLUG[lang]['contact'],'availableLanguage':['en','tr'],'contactType':'business enquiries'},'knowsAbout':['Claude API integration','AI consulting','Product engineering','AI evaluation']}
+    graph=[founder,service,{'@type':'WebSite','@id':root+'/#website','name':'Mevlana Yalçın','url':root,'publisher':{'@id':root+'/#business'}}]
+    if page in SLUG[lang]:
+        graph.append({'@type':'WebPage','@id':canonical+'#page','url':canonical,'name':page_name(lang,page),'inLanguage':lang,'isPartOf':{'@id':root+'/#website'},'dateModified':CONTENT_UPDATED})
+    if page not in ('home','404'):
+        graph.append({'@type':'BreadcrumbList','itemListElement':[{'@type':'ListItem','position':1,'name':page_name(lang,'home'),'item':root+SLUG[lang]['home']},{'@type':'ListItem','position':2,'name':page_name(lang,page),'item':canonical}]})
+    if page in ('products','yanki'):
+        graph.append({'@type':'SoftwareApplication','@id':root+'/work/yanki/#product','name':'Yankı','url':root+SLUG[lang]['yanki'],'applicationCategory':'LifestyleApplication','operatingSystem':'Web','description':COPY[lang]['products']['body'],'creator':{'@id':root+'/#founder'},'isAccessibleForFree':True})
+    return {'@context':'https://schema.org','@graph':graph}
+
 def shell(lang, page, version):
     c = COPY[lang]; other = 'tr' if lang == 'en' else 'en'; canonical = 'https://' + DOMAIN + SLUG[lang].get(page,'/404.html')
     nav = ''.join(f'<a href="{SLUG[lang][key]}"'+(' aria-current="page"' if key==page else '')+f'>{E(c["nav"][key])}</a>' for key in ['services','products','approach','company'])
-    nav += f'<a class="lang" href="{SLUG[other].get(page,SLUG[other]["home"])}" lang="{other}" aria-label="{ "Türkçe" if other=="tr" else "English"}">{c["nav"]["language"]}</a><a class="nav-cta" href="#contact">{E(c["nav"]["contact"])}{ARROW}</a>'
+    nav += f'<a class="lang" href="{SLUG[other].get(page,SLUG[other]["home"])}" lang="{other}" aria-label="{ "Türkçe" if other=="tr" else "English"}">{c["nav"]["language"]}</a><a class="nav-cta" href="{SLUG[lang]["contact"]}">{E(c["nav"]["contact"])}{ARROW}</a>'
     title = c['meta']['title'] if page == 'home' else (c['yanki']['title'] + ' — Yankı' if page == 'yanki' else c['nav'].get(page,c['footer']['privacy'] if page == 'privacy' else '404') + ' — Mevlana Yalçın')
     description = c['meta']['description'] if page in ['home','approach'] else c.get(page,{}).get('body',c['meta']['description'])
-    schema = {'@context':'https://schema.org','@type':'ProfessionalService','name':'Mevlana Yalçın','url':'https://'+DOMAIN,'description':c['meta']['description'],'email':POSTA,'founder':{'@type':'Person','name':'Mevlana Yalçın','jobTitle':'Founder & Principal Consultant','sameAs':[PROFIL, LINKEDIN]},"sameAs":[PROFIL, DEPO, LINKEDIN],'areaServed':['Global','TR'],'priceRange':'$$-$$$','contactPoint':{'@type':'ContactPoint','email':POSTA,'availableLanguage':['en','tr'],'contactType':'sales'},'address':{'@type':'PostalAddress','addressLocality':'Ankara','addressCountry':'TR'},'knowsAbout':['AI consulting','Product engineering','AI evaluation']}
+    schema = structured_data(lang,page,canonical)
+    og_image = 'https://' + DOMAIN + ('/og-tr.png' if lang == 'tr' else '/og.png')
+    og_alt = 'Mevlana Yalçın — ' + ('Claude ile AI danışmanlığı ve Yankı' if lang == 'tr' else 'AI consulting with Claude and Yankı')
     alts = ''.join(f'<link rel="alternate" hreflang="{d}" href="https://{DOMAIN}{SLUG[d].get(page,SLUG[d]["home"])}">' for d in SLUG)
-    footer = f'''<footer class="footer wrap"><div class="footer-top">{brand(lang)}<p class="footer-copy">{E(c['footer']['description'])}<br>{E(c['footer']['location'])}</p></div><div class="footer-bottom"><span>© 2026 Mevlana Yalçın</span><nav class="footer-links" aria-label="{'Alt bağlantılar' if lang=='tr' else 'Footer'}"><a href="{SLUG[lang]['company']}">{E(c['footer']['legal'])}</a><a href="{SLUG[lang]['privacy']}">{E(c['footer']['privacy'])}</a><a href="{SLUG[lang]['terms']}">{E(c['terms']['title'])}</a><a href="{SLUG[lang]['audit']}">{E(c['audit']['eyebrow'])}</a><a href="{LINKEDIN}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="{PROFIL}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="{DEPO}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="mailto:{POSTA}" class="email-link">{POSTA}</a></nav></div></footer>'''
+    footer = f'''<footer class="footer wrap"><div class="footer-top">{brand(lang)}<p class="footer-copy">{E(c['footer']['description'])}<br>{E(c['footer']['location'])}</p></div><div class="footer-bottom"><span>© 2026 Mevlana Yalçın</span><nav class="footer-links" aria-label="{'Alt bağlantılar' if lang=='tr' else 'Footer'}"><a href="{SLUG[lang]['company']}">{E(c['footer']['legal'])}</a><a href="{SLUG[lang]['contact']}">{E(c['nav']['contact'])}</a><a href="{SLUG[lang]['privacy']}">{E(c['footer']['privacy'])}</a><a href="{SLUG[lang]['terms']}">{E(c['nav']['terms'])}</a><a href="{LINKEDIN}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="{PROFIL}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="{DEPO}" target="_blank" rel="noopener noreferrer">{'Kaynak kodu' if lang=='tr' else 'Source code'} ↗</a><a href="mailto:{POSTA}" class="email-link">{POSTA}</a></nav></div></footer>'''
     return f'''<!DOCTYPE html>
-<html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{E(title)}</title><meta name="description" content="{E(description,quote=True)}"><meta name="theme-color" content="#f4f3ee"><link rel="canonical" href="{canonical}">{alts}<link rel="alternate" hreflang="x-default" href="https://{DOMAIN}{SLUG['en'].get(page,'/')}"><meta property="og:type" content="website"><meta property="og:title" content="{E(title,quote=True)}"><meta property="og:description" content="{E(description,quote=True)}"><meta property="og:url" content="{canonical}"><meta property="og:site_name" content="Mevlana Yalçın"><meta name="twitter:card" content="summary_large_image"><meta property="og:image" content="{OG_GORSEL}"><meta name="twitter:image" content="{OG_GORSEL}"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css?v={version}"><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False)}</script></head>
-<body><a class="skip" href="#main">{'İçeriğe geç' if lang=='tr' else 'Skip to content'}</a><header class="header wrap">{brand(lang)}<nav class="nav" id="menu" aria-label="{'Ana menü' if lang=='tr' else 'Main navigation'}">{nav}</nav><button class="menu-toggle" id="menudugme" aria-expanded="false" aria-controls="menu">{'Menü' if lang=='tr' else 'Menu'}</button></header><main id="main">{content(lang,page)}{contact(lang)}</main>{footer}<script src="/assets/nav.js?v={version}" defer></script>{f'<script src="/assets/app.js?v={version}" defer></script>' if page=='yanki' else ''}</body></html>'''
-
-
-def gorseller(cikti):
-    """Marka gorsellerini uretir: og.png (1200x630), apple-touch-icon, favicon.ico."""
-    try:
-        from PIL import Image, ImageDraw, ImageFont
-    except Exception:
-        print('PIL yok: og gorseli/ico atlandi')
-        return
-    FON = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-    zemin, metin, vurgu = (244, 243, 238), (34, 42, 39), (217, 85, 53)
-
-    def yazi(boyut):
-        return ImageFont.truetype(FON, boyut) if Path(FON).exists() else ImageFont.load_default()
-
-    g = Image.new('RGB', (1200, 630), zemin)
-    d = ImageDraw.Draw(g)
-    d.text((86, 140), "Mevlana Yalçın", font=yazi(84), fill=vurgu)
-    d.text((86, 258), "AI consulting with Claude", font=yazi(52), fill=metin)
-    d.text((86, 342), "Audits · integration · evaluation  ·  Ankara, Türkiye", font=yazi(30), fill=(90, 96, 92))
-    d.rectangle([86, 462, 156, 478], fill=vurgu)
-    d.text((86, 506), "mevlanayalcin.com.tr", font=yazi(30), fill=metin)
-    (cikti / 'assets').mkdir(parents=True, exist_ok=True)
-    g.save(cikti / 'assets' / 'og.png')
-
-    def kare(boyut):
-        i = Image.new('RGB', (boyut, boyut), (34, 42, 39))
-        dd = ImageDraw.Draw(i)
-        k = max(6, boyut // 5)
-        dd.text((k, int(boyut * 0.20)), "M", font=yazi(int(boyut * 0.60)), fill=(244, 243, 238))
-        dd.rectangle([boyut - k - 4, boyut - k - 4, boyut - 4, boyut - 4], fill=vurgu)
-        return i
-
-    kare(180).save(cikti / 'assets' / 'apple-touch-icon.png')
-    kare(64).save(cikti / 'favicon.ico')
+<html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{E(title)}</title><meta name="description" content="{E(description,quote=True)}"><meta name="theme-color" content="#f4f3ee"><link rel="canonical" href="{canonical}">{alts}<link rel="alternate" hreflang="x-default" href="https://{DOMAIN}{SLUG['en'].get(page,'/')}"><meta property="og:type" content="website"><meta property="og:title" content="{E(title,quote=True)}"><meta property="og:description" content="{E(description,quote=True)}"><meta property="og:url" content="{canonical}"><meta property="og:site_name" content="Mevlana Yalçın"><meta name="twitter:card" content="summary_large_image"><meta property="og:image" content="{og_image}"><meta property="og:image:type" content="image/png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="{E(og_alt,quote=True)}"><meta property="og:locale" content="{'tr_TR' if lang=='tr' else 'en_US'}"><meta name="twitter:image" content="{og_image}"><meta name="twitter:image:alt" content="{E(og_alt,quote=True)}"><link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css?v={version}"><script type="application/ld+json">{json.dumps(schema,ensure_ascii=False)}</script></head>
+<body><a class="skip" href="#main">{'İçeriğe geç' if lang=='tr' else 'Skip to content'}</a><header class="header wrap">{brand(lang)}<nav class="nav" id="menu" aria-label="{'Ana menü' if lang=='tr' else 'Main navigation'}">{nav}</nav><button class="menu-toggle" id="menudugme" aria-expanded="false" aria-controls="menu">{'Menü' if lang=='tr' else 'Menu'}</button></header><main id="main">{breadcrumbs(lang,page)}{content(lang,page)}{contact(lang)}</main>{footer}<script src="/assets/nav.js?v={version}" defer></script>{f'<script src="/assets/app.js?v={version}" defer></script>' if page=='yanki' else ''}</body></html>'''
 
 
 def main():
@@ -215,8 +193,7 @@ def main():
             target.parent.mkdir(parents=True,exist_ok=True)
             target.write_text(shell(lang,page,fingerprint),encoding='utf-8')
     (CIKTI/'404.html').write_text(shell('en','404',fingerprint),encoding='utf-8')
-    import datetime
-    tarih = datetime.date.today().isoformat()
+    tarih = CONTENT_UPDATED
     urls = sorted('https://'+DOMAIN+u for routes in SLUG.values() for u in routes.values())
     (CIKTI/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{u}</loc><lastmod>{tarih}</lastmod></url>' for u in urls)+'</urlset>')
     (CIKTI/'robots.txt').write_text(f'User-agent: *\nAllow: /\nSitemap: https://{DOMAIN}/sitemap.xml\n')
@@ -224,7 +201,11 @@ def main():
     for lang in SLUG:
         for page,path in SLUG[lang].items(): llms += f'- [{lang}: {page}](https://{DOMAIN}{path})\n'
     (CIKTI/'llms.txt').write_text(llms+'\nContact: '+POSTA+'\n')
-    gorseller(CIKTI)
+    for image in (KOK / 'site' / 'brand').iterdir():
+        if image.is_file() and image.suffix in ('.png','.ico'):
+            shutil.copyfile(image,CIKTI / image.name)
+    shutil.copyfile(CIKTI/'og.png',CIKTI/'assets'/'og.png')
+    shutil.copyfile(CIKTI/'apple-touch-icon.png',CIKTI/'assets'/'apple-touch-icon.png')
     (CIKTI/'favicon.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="6" fill="#222a27"/><path d="M7 37V11h7l10 14 10-14h7v26h-7V24L24 38 14 24v13Z" fill="#f4f3ee"/><path d="M34 33h7v7h-7z" fill="#d95535"/></svg>')
     print(f'Built {len(urls)} bilingual pages, local assets, sitemap and 404.')
 

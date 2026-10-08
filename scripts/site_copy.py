@@ -249,220 +249,47 @@ COPY = {
     },
 }
 
-# ---------------------------------------------------------------------------
-# Sonradan eklenen bolumler: fiyat cifpasi, denetim vaka calismasi, hizmet
-# sartlari ve kimlik baglari. build.py bu anahtarlari varsa kullanir.
-# ---------------------------------------------------------------------------
-KIMLIK = {
-    "github_profil": "https://github.com/mevlanayalcin",
-    "linkedin": "https://www.linkedin.com/in/mevlanayalcin",
-    "saat_dilimi": "Europe/Istanbul (UTC+3)",
-    "yanit_suresi": {"en": "Replies within one business day", "tr": "Bir is gunu icinde yanit verilir"},
+
+# Public contact details and service process. Commercial terms are agreed per engagement.
+COPY["en"]["contact_page"] = {
+    "eyebrow": "Contact", "title": "A direct conversation about your next step.",
+    "body": "For a consulting project, product feedback or a question about Yankı, get in touch with Mevlana Yalçın directly.",
+    "email_label": "Business enquiries", "founder_label": "Your point of contact",
+    "timezone_label": "Based in", "timezone": "Ankara, Türkiye · UTC+3",
+    "write_title": "What to include", "write_body": "Tell us about your workflow, the problem you want to solve and your intended timeline. For product feedback, describe what happened without sharing private journal text.",
+    "next_title": "What happens next", "next_body": "The founder handles enquiries personally. We discuss the scope and next steps before deciding on an engagement.",
+    "cta": "Email Mevlana", "profile": "GitHub profile", "linkedin": "Professional background",
+    "source": "Yankı source code", "terms_link": "How an engagement starts"
 }
-
-COPY["en"].update({
-    "prices": {
-        "label": "Starting point",
-        "retainer": "Advisory retainer: from $1,200 / month (about two working days).",
-        "note": ("Prices are starting points for a fixed-scope engagement and exclude taxes. You get a written "
-                 "quote before any work starts; it does not change without an agreed change of scope."),
-        "items": {
-            "01": "1–2 weeks · from $2,500",
-            "02": "2–6 weeks · from $6,000",
-            "03": "5–10 working days · from $4,500",
-        },
-    },
-    "audit": {
-        "eyebrow": "Case study",
-        "title": "Auditing a live LLM marketplace from the buyer's seat",
-        "body": ("A public inference exchange promises the lowest price for every prompt and routes requests "
-                 "between competing suppliers. We spent two days and about $400 of signup credit testing what "
-                 "the service actually does for a buyer, using only what a customer can see."),
-        "method_title": "How it was done",
-        "method": [
-            "Signed up programmatically for 20 accounts, one residential exit IP each, and instrumented the "
-            "service from those keys.",
-            "Measured behaviour, not documentation: request bodies, receipts, timing, cache headers and the "
-            "endpoints the web console itself calls.",
-            "Sent controlled inputs (including URL-fetching fields with out-of-band canaries) to see what the "
-            "service touches on our behalf.",
-            "Where a request failed, the API's own validation errors were used to recover the real field names.",
-        ],
-        "findings_title": "Nine findings worth paying for",
-        "findings": [
-            {"title": "Blind server-side request forgery", "body":
-                "A URL field fetched our canary from two unrelated cloud networks, with a generic Go HTTP "
-                "client and no sign of an allow-list. Internal endpoints are reachable in principle."},
-            {"title": "A timing oracle on the same field", "body":
-                "Refused, answered and filtered inputs returned in about 2.5, 3.9 and 12.5 seconds. Three "
-                "distinct timings, reproducible, tell an observer which path a URL took."},
-            {"title": "Deterministic failure on image responses", "body":
-                "One response shape produced the same 502 with an undecodable body every time, so the fault "
-                "sits in the platform's handling rather than in model randomness."},
-            {"title": "Cache hits are free and shared across keys", "body":
-                "A cached answer served to a different account's key, and the hit did not draw down credit. "
-                "Good for repeated prompts; worth knowing if you expect isolation between keys."},
-            {"title": "Failures cost nothing; SLA credit was unreachable", "body":
-                "Failed jobs were never billed. Across 600+ observed jobs, every one was recorded as meeting "
-                "its service promise, so the advertised service credit never triggered."},
-            {"title": "One supplier holds the market", "body":
-                "A single seller accounted for roughly 98% of offers (773 of 786) and 1,882 lifetime jobs, "
-                "against 379, 267, 54, 49 and 1 for everyone else. Price competition is nominal today."},
-            {"title": "Referral reward is on fees, not spend", "body":
-                "The referral pays 20% of the platform's fee, which works out near 1% of what your referee "
-                "spends. Materially different from how these programmes are usually read."},
-            {"title": "Frontier models depend on supplier admission", "body":
-                "Dated model snapshots served; alias and 'latest' identifiers returned supplier-side failures. "
-                "Nineteen request shapes across three surfaces behaved the same way, which places the limit "
-                "with the supplier, not the client. Re-testing on 8 October reversed the pattern "
-                "outright: undated names served and the dated snapshots returned 404. Availability "
-                "tracks admission, and a price bound (`x-liquid-cap-usd`) is what makes the "
-                "automatic selection work at all."},
-            {"title": "The useful endpoints are undocumented", "body":
-                "Quotes, receipts, balance and throughput routes were found in the shipped bundle, not the "
-                "manual; provider applications could be filed by API but key creation stayed gated behind "
-                "human admission."},
-        ],
-        "outcome_title": "What the client got",
-        "outcome": ("A written report with reproduction steps for every finding, a latency and cost baseline "
-                    "for the models they actually use, and three decisions they could make: which models to "
-                    "pin, where to keep a fallback supplier, and what to ask the platform in writing."),
-        "cta": "Discuss an audit like this",
-        "evidence_note": ("Measurements were taken in October 2026 against the production service. A live "
-                          "platform changes under you; the report is dated for that reason."),
-    },
-    "terms": {
-        "eyebrow": "Working together",
-        "title": "Terms of engagement",
-        "body": ("Short on purpose. These are the points we would otherwise end up discussing twice."),
-        "sections": [
-            {"title": "Scope and quotes", "body":
-                "Every engagement starts from a written scope: what is examined or built, what is delivered, "
-                "and what is explicitly not included. Prices shown on this site are starting points and "
-                "exclude taxes. A quote is valid for 30 days and does not change unless the scope changes."},
-            {"title": "Invoicing and payment", "body":
-                "Bank transfer or card, invoices due within 15 days. Work above $5,000 starts after half the "
-                "fee. This practice invoices as a sole proprietorship, opened with the first paid engagement; "
-                "that is stated here rather than discovered later."},
-            {"title": "Cancellation", "body":
-                "Either side can stop an engagement at any time. Work completed up to that point is billed, "
-                "and any unused part of a retainer is not. A retainer ends on 30 days' notice."},
-            {"title": "Ownership", "body":
-                "Deliverables belong to the client once paid for. Methods, scripts and checklists written "
-                "before or alongside the engagement stay with us and are licensed to you for use."},
-            {"title": "Confidentiality and data", "body":
-                "Client material stays with us; we sign an NDA on request. Personal data is processed only to "
-                "answer you and to invoice you, as described in the privacy notice, under Türkiye's KVKK."},
-            {"title": "What we do not claim", "body":
-                "We do not give legal or tax advice, and an audit does not certify a vendor. Findings come "
-                "with the measurements and the date they were taken, so you can check them."},
-            {"title": "Governing law", "body":
-                "Engagements are governed by the law of Türkiye, with Istanbul courts for disputes."},
-        ],
-        "cta": "Ask about terms before you commit",
-    },
-})
-
-COPY["tr"].update({
-    "prices": {
-        "label": "Başlangıç",
-        "retainer": "Danışmanlık aboneliği: ayda 1.200 $'dan (yaklaşık iki iş günü).",
-        "note": ("Fiyatlar, kapsamı belli bir iş için başlangıç noktalarıdır ve vergiler hariçtir. İş "
-                 "başlamadan yazılı teklif verilir; kapsam değişmedikçe teklif değişmez."),
-        "items": {
-            "01": "1–2 hafta · 2.500 $'dan",
-            "02": "2–6 hafta · 6.000 $'dan",
-            "03": "5–10 iş günü · 4.500 $'dan",
-        },
-    },
-    "audit": {
-        "eyebrow": "Vaka çalışması",
-        "title": "Canlı bir LLM pazar yerini alıcı tarafında denetlemek",
-        "body": ("Herkese açık bir çıkarım pazarı, her istek için en düşük fiyatı vaat ediyor ve istekleri "
-                 "birbirine rakip tedarikçiler arasında dağıtıyor. İki gün ve yaklaşık 400 $ kayıt kredisi "
-                 "harayarak, müşterinin görebildiği araçlarla hizmetin gerçekte ne yaptığını ölçtük."),
-        "method_title": "Nasıl yapıldı",
-        "method": [
-            "Programatik olarak 20 hesap açıldı; her biri farklı bir ev çıkış IP'si aldı ve ölçümler bu "
-            "anahtarlardan yapıldı.",
-            "Belge değil davranış ölçüldü: istek gövdeleri, fişler, süreler, önbellek başlıkları ve web "
-            "konsolunun kendisinin çağırdığı uçlar.",
-            "Kontrollü girdiler gönderildi (URL çeken alanlara dışarıdan iz sürücü işaretler bırakıldı) ki "
-            "hizmetin bizim adımıza neye dokunduğu görülsün.",
-            "İstekler başarısız olduğunda, API'nin kendi doğrulama hatalarından gerçek alan adları geri "
-            "okundu.",
-        ],
-        "findings_title": "Paraya değecek dokuz bulgu",
-        "findings": [
-            {"title": "Kör sunucu-taraflı istek sahteciliği (SSRF)", "body":
-                "Bir URL alanı, işaretimizi birbirinden bağımsız iki bulut ağından çekti; jenerik bir Go HTTP "
-                "istemcisi ve bir izin listesi izi yoktu. Prensipte iç uçlara erişilebiliyor."},
-            {"title": "Aynı alanda zamanlama fâli", "body":
-                "Reddedilen, yanıtlanan ve süzülen girdiler sırasıyla ~2,5, ~3,9 ve ~12,5 saniye sürdü. "
-                "Üretilabilir üç ayrı süre, URL'nin hangi yoldan geçtiğini söylüyor."},
-            {"title": "Görsel yanıtlarda belirgin arıza", "body":
-                "Bir yanıt biçimi her seferinde aynı 502'yi ve çözülemeyen bir gövdeyi üretti; arıza modelin "
-                "rastgeleliğinde değil, platformun işleyişinde."},
-            {"title": "Önbellek isabetleri ücretsiz ve hesaplar arası", "body":
-                "Önbellekten dönen yanıt başka bir hesabın anahtarına servis edildi ve kredi düşürmedi. "
-                "Tekrarlanan isteklerde iyi; anahtarlar arası yalıtım bekliyorsanız bilinmesi gereken bir şey."},
-            {"title": "Başarısız iş ücretsiz; SLA kredisine ulaşılamıyor", "body":
-                "Başarısız işlerden hiç ücret alınmadı. Gözlemlenen 600+ işin tamamı 'sözleşme karşılandı' "
-                "kayıtlıydı; vaat edilen hizmet kredisi bir kez bile işlemadı."},
-            {"title": "Pazarı tek satıcı tutuyor", "body":
-                "Tek satıcı tekliflerin ~%98'ine (786'da 773) ve 1.882 ömür boyu işe sahipti; diğerleri "
-                "379, 267, 54, 49 ve 1 işte kaldı. Fiyat rekabeti bugün için göstermelik."},
-            {"title": "Yönlendirme ödeli harcama üzerinden değil", "body":
-                "Yönlendirme, platform komisyonunun %20'si; bu da yönlendirilen kişinin harcadığının kabaca "
-                "%1'i. Bu, programların genellikle okunduğu şeyden önemli ölçüde farklı."},
-            {"title": "Sınır modelleri tedarikçi kabulüne bağlı", "body":
-                "Tarihli model anlık görüntüleri servis edildi; taahhüt adı ve 'latest' biçimleri tedarikçi "
-                "tarafı hataları döndü. Üç arayüzde 19 istek biçimi aynı sonucu verdi: sınır müşteride değil. 8 Ekim'deki yeniden testte desen tümüyle tersine döndü: tarihli anlık görüntüler 404 verir, tarihsiz adlar servis edilir. Yani sınır kabul ve arz meselesi; otomatik seçimin çalışması ayrıca bir fiyatsınırına (`x-liquid-cap-usd`) bağlı."},
-            {"title": "İşe yarayan uçlar dokümante değil", "body":
-                "Teklif, fiş, bakiye ve verim uçları kılavuzda değil paketlenmiş uygulamada bulundu; tedarikçi "
-                "başvurusu API ile yapılabiliyor ama anahtar üretimi insan kabulüne kadar kilitli."},
-        ],
-        "outcome_title": "Karşılığında ne çıktı",
-        "outcome": ("Her bulgu için yineleneme adımları içeren yazılı bir rapor, müşterinin gerçekte kullandığı "
-                    "modeller için gecikme ve maliyet çizgisi, ve alabilecekleri üç karar: hangi modellere "
-                    "bağlanılacağı, nerede yedek tedarikçi tutulacağı ve platformdan yazılı olarak ne "
-                    "isteneceği."),
-        "cta": "Benzer bir denetimi konuşun",
-        "evidence_note": ("Ölçümler Ekim 2026'da canlı hizmete karşı alındı. Canlı bir platform siz ölçerken "
-                          "değişir; rapor bu yüzden tarih taşır."),
-    },
-    "terms": {
-        "eyebrow": "Çalışma biçimi",
-        "title": "Hizmet şartları",
-        "body": "Kasıtlı olarak kısa. Aksi hâlde iki kez konuşacağımız maddeler.",
-        "sections": [
-            {"title": "Kapsam ve teklif", "body":
-                "Her iş yazılı kapsamla başlar: neyin inceleneceği veya üretileceği, neyin teslim edileceği "
-                "ve neyin açıkça dışarıda kaldığı. Sitedeki fiyatlar başlangıç noktalarıdır, vergiler "
-                "hariçtir. Teklif 30 gün geçerlidir; kapsam değişmedikçe teklif değişmez."},
-            {"title": "Faturalama ve ödeme", "body":
-                "Havale/EFT veya kart; faturalar 15 gün içinde ödenir. 5.000 $ üzeri işler ücretin yarısı "
-                "alındıktan sonra başlar. Bu pratik, ilk ücretli işle birlikte kurulacak bir şahıs şirketi "
-                "olarak fatura keser; bu burada yazılır, sonra sürpriz olmaz."},
-            {"title": "Fesih", "body":
-                "İş, her iki tarafça herhangi bir zamanda durdurulabilir. O ana kadar yapılan iş faturalanır; "
-                "aboneliğin kullanılmayan kısmı faturalanmaz. Abonelik 30 gün önceki bildirimle biter."},
-            {"title": "Fikri haklar", "body":
-                "Ödeme yapıldığında teslim edilen iş müşteriye aittir. Önceden yazılmış yöntemler, betikler "
-                "ve kontrol listeleri bizde kalır ve kullanım için size lisanslanır."},
-            {"title": "Gizlilik ve veri", "body":
-                "Müşteri materyali bizde kalır; istenirse gizlilik sözleşmesi imzalanır. Kişisel veri yalnızca "
-                "yanıt vermek ve faturalandırmak için işlenir; Türkiye'nin KVKK kapsamındadır."},
-            {"title": "Ne vaad etmiyoruz", "body":
-                "Hukuk veya vergi tavsiyesi vermeyiz; bir denetim tedarikçiyi sertifikalandırmaz. Bulgular "
-                "ölçümleri ve tarihiyle birlikte gelir, böylece siz de kontrol edebilirsiniz."},
-            {"title": "Uygulanacak hukuk", "body":
-                "İşler Türkiye hukukuna tabidir; uyuşmazlıklarda İstanbul mahkemeleri yetkilidir."},
-        ],
-        "cta": "Karar vermeden önce şartları sorun",
-    },
-})
-
-# Yeni sayfalarin menü/etiket adlari (title ve footer bunlari kullanir)
-COPY["en"]["nav"].update({"audit": "Audit case study", "terms": "Terms of engagement"})
-COPY["tr"]["nav"].update({"audit": "Denetim vakası", "terms": "Hizmet şartları"})
+COPY["tr"]["contact_page"] = {
+    "eyebrow": "İletişim", "title": "Bir sonraki adımınızı konuşalım.",
+    "body": "Bir danışmanlık projesi, ürün geri bildirimi veya Yankı hakkında sorularınız için doğrudan Mevlana Yalçın'a ulaşın.",
+    "email_label": "İş görüşmeleri", "founder_label": "İletişim kişiniz",
+    "timezone_label": "Merkez", "timezone": "Ankara, Türkiye · UTC+3",
+    "write_title": "Nelerden söz edebilirsiniz?", "write_body": "İş akışınızı, çözmek istediğiniz sorunu ve düşündüğünüz takvimi anlatın. Ürün geri bildirimi için özel günlük metninizi paylaşmadan karşılaştığınız durumu açıklayın.",
+    "next_title": "Sonraki adım", "next_body": "Görüşmeleri kurucu yürütür. Çalışmaya karar vermeden önce kapsam ve sonraki adımlar birlikte netleştirilir.",
+    "cta": "Mevlana'ya yazın", "profile": "GitHub profili", "linkedin": "Profesyonel geçmiş",
+    "source": "Yankı kaynak kodu", "terms_link": "Çalışmaya nasıl başlanır?"
+}
+COPY["en"]["terms"] = {
+    "eyebrow": "Working together", "title": "How an engagement starts.",
+    "body": "The website describes the services we offer. The details of a specific project are agreed directly with the founder.",
+    "sections": [
+        {"title": "Define the work", "body": "We discuss the problem, the available inputs and the intended outcome. A written scope identifies the work and deliverables before an engagement begins."},
+        {"title": "Agree the commercial details", "body": "The quote and agreement set out the price, payment arrangements, timeline, responsibilities, cancellation and ownership provisions for that engagement. The site does not collect payment or create a subscription."},
+        {"title": "Using the Yankı beta", "body": "Yankı is available to try without an account. It is a reflection tool, not therapy, diagnosis, medical advice or an emergency service. Responses can be wrong and the beta can be unavailable. Read the product and privacy pages before entering text."},
+        {"title": "Questions", "body": "Contact info@mevlanayalcin.com.tr to discuss the scope or ask about the service before agreeing to any work."},
+    ], "cta": "Discuss a project"
+}
+COPY["tr"]["terms"] = {
+    "eyebrow": "Birlikte çalışmak", "title": "Çalışmaya nasıl başlanır?",
+    "body": "Site, sunduğumuz hizmetleri tanıtır. Belirli bir projenin ayrıntıları doğrudan kurucuyla görüşülerek kararlaştırılır.",
+    "sections": [
+        {"title": "Kapsamın belirlenmesi", "body": "Sorunu, kullanılabilecek girdileri ve beklenen sonucu konuşuruz. Çalışma başlamadan önce yapılacak iş ve teslimatlar yazılı kapsamda belirlenir."},
+        {"title": "Ticari ayrıntıların kararlaştırılması", "body": "Ücret, ödeme düzeni, takvim, sorumluluklar, iptal ve fikri haklara ilişkin koşullar ilgili işin teklifinde ve sözleşmesinde belirlenir. Site üzerinden ödeme alınmaz veya abonelik başlatılmaz."},
+        {"title": "Yankı betasının kullanımı", "body": "Yankı, hesap açmadan denenebilir. Bir düşünme aracıdır; terapi, teşhis, tıbbi tavsiye veya acil yardım hizmeti değildir. Yanıtlar hatalı olabilir ve beta hizmeti zaman zaman kullanılamayabilir. Metin girmeden önce ürün ve gizlilik sayfalarını inceleyin."},
+        {"title": "Sorular", "body": "Çalışmaya karar vermeden önce kapsamı görüşmek veya hizmet hakkında soru sormak için info@mevlanayalcin.com.tr adresine ulaşabilirsiniz."},
+    ], "cta": "Projenizi konuşalım"
+}
+COPY["en"]["nav"].update({"contact": "Contact", "terms": "Working together"})
+COPY["tr"]["nav"].update({"contact": "İletişim", "terms": "Çalışma koşulları"})
