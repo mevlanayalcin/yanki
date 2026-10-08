@@ -251,7 +251,6 @@ const YONLENDIRME = {
   "/tr/company": "/tr/kurumsal/", "/tr/company/": "/tr/kurumsal/",
   "/tr/calismalar": "/tr/urunler/", "/tr/calismalar/": "/tr/urunler/",
   "/tr/work/yanki": "/tr/calismalar/yanki/", "/tr/work/yanki/": "/tr/calismalar/yanki/",
-  "/tr/calismalar/inference-denetimi": "/tr/hizmetler/", "/tr/calismalar/inference-denetimi/": "/tr/hizmetler/",
 };
 
 export default {
