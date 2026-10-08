@@ -20,6 +20,21 @@ DEPO = "https://github.com/mevlanayalcin/yanki"
 # Asset URL'lerine surum eklenir: her dagitimda onbellegi kirar.
 SURUM = "1"
 
+# Tek URL kaynagi: dil -> sayfa anahtari -> yol parcasi. canonical, menii, sitemap,
+# dosya yolu ve 404 baglantilarinin hepsi buradan uretilir; ayri ayri yazmak
+# /tr/tr/api/ gibi iki kez onekli yollara yol acti.
+KOK_YOL = {"en": "", "tr": "tr/"}
+SLUG = {
+    "en": {"index": "", "nasil": "how-it-works/", "guvenlik": "safety/", "gizlilik": "privacy/", "api": "api/", "kurumsal": "company/"},
+    "tr": {"index": "", "nasil": "nasil/", "guvenlik": "guvenlik/", "gizlilik": "gizlilik/", "api": "api/", "kurumsal": "kurumsal/"},
+}
+
+def url(dil: str, anahtar: str) -> str:
+    return "/%s%s" % (KOK_YOL[dil], SLUG[dil][anahtar])
+
+def tam_url(dil: str, anahtar: str) -> str:
+    return "https://%s%s" % (DOMAIN, url(dil, anahtar))
+
 DILLER = {
     "en": {"kod": "en", "yol": "", "adi": "English"},
     "tr": {"kod": "tr", "yol": "tr/", "adi": "Türkçe"},
@@ -59,7 +74,7 @@ IÇERIK = {
             "baslik": "Where your text lives",
             "maddeler": [
                 "Check-in text is sent to Anthropic for one inference call and is not stored on our servers during the beta.",
-                "The waitlist entry is one row: your email address, in Cloudflare KV. No analytics cookie, no ad pixel, no session replay.",
+                "The waitlist entry is one row: your email address, in Cloudflare KV. No advertising pixel, no session replay, no cookie set by us; Cloudflare's own cookieless traffic counter may load a script for aggregate pageview counts.",
                 "Ask for deletion at " + POSTA + " and the row is gone the same day.",
                 "Handled under Türkiye's KVKK; we keep no health record, so there is no clinical file to request.",
             ],
@@ -75,13 +90,13 @@ IÇERIK = {
                 ("Reflection endpoint with schema checks", "Live", "Runs on Cloudflare Workers; sample answers on this page were captured from it."),
                 ("Waitlist with real deletion path", "Live", "One KV row per address, removed on request."),
                 ("Accounts, check-in history, reminders", "In development", "Local-first storage is the default; sync will be opt-in."),
-                ("Crisis word list in Turkish and English", "Live", "Reviewed against a public helpline wording list, not invented."),
+                ("Crisis word list in Turkish and English", "Live", "Our own conservative list; a false positive costs one unnecessary helpline banner, not a wrong reflection."),
                 ("Clinician review of the reflection protocol", "Planned", "Not started, no partner signed yet."),
                 ("Mobile apps", "Planned", "No date committed."),
             ],
             "dogrulama": [
                 ("Worker source", DEPO),
-                ("API contract", "https://" + DOMAIN + "/api/"),
+                ("API contract", tam_url("en", "api")),
                 ("Machine-readable summary", "https://" + DOMAIN + "/llms.txt"),
                 ("Crawl test", "https://" + DOMAIN + "/robots.txt"),
             ],
@@ -120,12 +135,12 @@ IÇERIK = {
         },
         "altbilgi": "Yankı · Ankara, Türkiye · 2026 · operating name, not a registered legal entity · " + POSTA,
         "sayfalar": [
-            ("", "Product"),
-            ("how-it-works/", "How it works"),
-            ("safety/", "Safety"),
-            ("privacy/", "Privacy"),
-            ("api/", "API"),
-            ("company/", "Company"),
+            ("index", "Product"),
+            ("nasil", "How it works"),
+            ("guvenlik", "Safety"),
+            ("gizlilik", "Privacy"),
+            ("api", "API"),
+            ("kurumsal", "Company"),
         ],
         "menuDilleri": {"en": "Türkçe", "tr": "English"},
     },
@@ -162,7 +177,7 @@ IÇERIK = {
             "baslik": "Metnin nerede durur",
             "maddeler": [
                 "Günlük metni tek bir çıkarım çağrısı için Anthropic'e gider ve beta süresince bizim sunucularımızda saklanmaz.",
-                "Bekleme listesi kaydı tek satırdır: e-posta adresin, Cloudflare KV içinde. Analitik çerezi yok, reklam pikseli yok, oturum kaydı yok.",
+                "Bekleme listesi kaydı tek satırdır: e-posta adresin, Cloudflare KV içinde. Reklam pikseli yok, oturum kaydı yok, bizim koyduğumuz çerez yok; Cloudflare'ın çerezsiz sayaç betiği toplam sayfa görüntüleme sayısı için yüklenebilir.",
                 "Silme için " + POSTA + " adresine yaz; aynı gün silinir.",
                 "KVKK kapsamında ele alınır; sağlık kaydı tutmadığımız için talep edilecek klinik bir dosya da yoktur.",
             ],
@@ -178,13 +193,13 @@ IÇERIK = {
                 ("Şema denetimli yansıtma ucu", "Yayında", "Cloudflare Workers üzerinde çalışır; bu sayfadaki örnek cevaplar ondan kaydedildi."),
                 ("Gerçek silme yoluyla bekleme listesi", "Yayında", "Adres başına tek KV satırı; istenince silinir."),
                 ("Hesap, günlük geçmişi, hatırlatmalar", "Geliştiriliyor", "Yerel öncelikli saklama varsayılan olacak; eşitleme seçenekli olacak."),
-                ("Türkçe ve İngilizce kriz kelime listesi", "Yayında", "Açık bir yardım hattı ifade listesine göre gözdendirildi, uydurulmadı."),
+                ("Türkçe ve İngilizce kriz kelime listesi", "Yayında", "Kendi tuttuğumuz muhafazakar bir liste; yanlış-pozitif gereksiz bir yardım hattı uyarısına yol açar, yanlış bir yansıtmaya değil."),
                 ("Yansıtma protokolünün uzman değerlendirmesi", "Planlanan", "Başlamadı, imzalı ortak yok."),
                 ("Mobil uygulamalar", "Planlanan", "Verilmiş tarih yok."),
             ],
             "dogrulama": [
                 ("Worker kaynak kodu", DEPO),
-                ("API sözleşmesi", "https://" + DOMAIN + "/api/"),
+                ("API sözleşmesi", tam_url("tr", "api")),
                 ("Makine okumalı özet", "https://" + DOMAIN + "/llms.txt"),
                 ("Örümcek testi", "https://" + DOMAIN + "/robots.txt"),
             ],
@@ -223,43 +238,31 @@ IÇERIK = {
         },
         "altbilgi": "Yankı · Ankara, Türkiye · 2026 · işletme adı, tescilli tüzel kişilik değil · " + POSTA,
         "sayfalar": [
-            ("tr/", "Ürün"),
-            ("tr/nasil/", "Nasıl çalışır"),
-            ("tr/guvenlik/", "Güvenlik"),
-            ("tr/gizlilik/", "Gizlilik"),
-            ("tr/api/", "API"),
-            ("tr/kurumsal/", "Kurumsal"),
+            ("index", "Ürün"),
+            ("nasil", "Nasıl çalışır"),
+            ("guvenlik", "Güvenlik"),
+            ("gizlilik", "Gizlilik"),
+            ("api", "API"),
+            ("kurumsal", "Kurumsal"),
         ],
         "menuDilleri": {"en": "Türkçe", "tr": "English"},
     },
 }
 
 # Sayfa dosya adlari: dil -> {sayfa anahtari: yol}
-SAYFALAR = {
-    "en": {"index": "index.html", "nasil": "how-it-works/index.html", "guvenlik": "safety/index.html",
-           "gizlilik": "privacy/index.html", "api": "api/index.html", "kurumsal": "company/index.html"},
-    "tr": {"index": "tr/index.html", "nasil": "tr/nasil/index.html", "guvenlik": "tr/guvenlik/index.html",
-           "gizlilik": "tr/gizlilik/index.html", "api": "tr/api/index.html", "kurumsal": "tr/kurumsal/index.html"},
-}
+def sayfa_yollari():
+    return {d: {a: "%s%sindex.html" % (KOK_YOL[d], SLUG[d][a]) for a in SLUG[d]} for d in SLUG}
 
-EK_URL = {
-    "en": {"nasil": "/how-it-works/", "guvenlik": "/safety/", "gizlilik": "/privacy/", "api": "/api/", "kurumsal": "/company/"},
-    "tr": {"nasil": "/tr/nasil/", "guvenlik": "/tr/guvenlik/", "gizlilik": "/tr/gizlilik/", "api": "/tr/api/", "kurumsal": "/tr/kurumsal/"},
-}
+SAYFALAR = sayfa_yollari()
 
 
 def menu(dil: str, aktif: str) -> str:
-    parcalar = []
-    for dal, ad in [(s[0] if s[0] else "index", s[1]) for s in IÇERIK[dil]["sayfalar"]]:
-        pass
     liste = []
-    for yol, ad in IÇERIK[dil]["sayfalar"]:
-        anahtar = {v: k for k, v in EK_URL[dil].items()}.get("/" + yol, "index") if yol else "index"
-        tam = "/" + yol if yol else "/"
+    for anahtar, ad in IÇERIK[dil]["sayfalar"]:
         isaret = ' class="aktif"' if anahtar == aktif else ""
-        liste.append('<a href="%s"%s>%s</a>' % (tam, isaret, html.escape(ad)))
+        liste.append('<a href="%s"%s>%s</a>' % (url(dil, anahtar), isaret, html.escape(ad)))
     digeri = "tr" if dil == "en" else "en"
-    liste.append('<a class="dil" href="/%s">%s</a>' % (DILLER[digeri]["yol"].rstrip("/"), IÇERIK[dil]["menuDilleri"][dil]))
+    liste.append('<a class="dil" href="%s">%s</a>' % (url(digeri, "index") or "/", IÇERIK[dil]["menuDilleri"][dil]))
     return "\n      ".join(liste)
 
 
@@ -283,14 +286,14 @@ def kabuk(dil: str, anahtar: str, baslik: str, aciklama: str, govde: str, canoni
 <script type="application/ld+json">%(jsonld)s</script>
 </head><body>
 <header class="ust">
-  <a class="kul" href="/%(yol)s">Yankı<span class="nokta">.</span></a>
+  <a class="kul" href="%(anasayfa)s">Yankı<span class="nokta">.</span></a>
   <nav class="menu" id="menu">%(menu)s</nav>
   <button class="menudugme" id="menudugme" aria-expanded="false" aria-controls="menu">Menu</button>
 </header>
 <main>%(govde)s</main>
 <footer class="alt">
   <p class="altbilgi">%(altbilgi)s</p>
-  <p class="altlinkler"><a href="%(depo)s">GitHub</a> · <a href="/llms.txt">llms.txt</a> · <a href="/%(yol)sapi/">API</a> · <a href="/%(yol)scompany/">Company</a></p>
+  <p class="altlinkler"><a href="%(depo)s">GitHub</a> · <a href="/llms.txt">llms.txt</a> · <a href="%(apiUrl)s">API</a> · <a href="%(kurumsalUrl)s">Company</a></p>
 </footer>
 <script src="/assets/nav.js?v=%(surum)s" defer></script>
 %(betik)s
@@ -299,8 +302,9 @@ def kabuk(dil: str, anahtar: str, baslik: str, aciklama: str, govde: str, canoni
         "dil": dil, "baslik": html.escape(baslik), "aciklama": html.escape(aciklama),
         "canonical": canonical, "menu": menu(dil, anahtar), "govde": govde,
         "altbilgi": html.escape(IÇERIK[dil]["altbilgi"]), "depo": DEPO,
-        "yol": DILLER[dil]["yol"],
         "surum": SURUM,
+        "apiUrl": url(dil, "api"), "kurumsalUrl": url(dil, "kurumsal"),
+        "anasayfa": url(dil, "index") or "/",
         "betik": "<script src=\"/assets/app.js?v=1\" defer></script>" if anahtar == "index" else "",
         "jsonld": json.dumps(_jsonld(dil, canonical), ensure_ascii=False, separators=(",", ":")),
     }
@@ -438,8 +442,7 @@ def main() -> None:
             i = IÇERIK[dil]
             aciklama = i["ozet"] if anahtar == "index" else i.get({"nasil": "nasil", "guvenlik": "guvenlik", "gizlilik": "gizlilik", "api": "api", "kurumsal": "kurumsal"}[anahtar], {}).get("baslik", i["ozet"])
             baslik = i["baslik"] if anahtar == "index" else "%s · Yankı" % aciklama
-            slug = "" if anahtar == "index" else EK_URL[dil][anahtar].rstrip("/").lstrip("/")
-            canonical = "https://%s/%s%s" % (DOMAIN, DILLER[dil]["yol"], (slug + "/") if slug else "")
+            canonical = tam_url(dil, anahtar)
             if anahtar == "nasil":
                 aciklama = i["nasil"]["baslik"] + " — " + i["kahraman"]["alti"]
             elif anahtar == "guvenlik":
@@ -455,18 +458,17 @@ def main() -> None:
     # 404 sayfasi: kabukla ayni cizgide, iki dilde de cikis verir
     govde404 = (
         '<section class="ku"><p class="ustbaslik">404</p><h1>%s</h1><p>%s</p>'
-        '<p><a href="/">%s</a> &middot; <a href="/tr/">Türkçe ana sayfa</a> &middot; '
-        '<a href="/company/">%s</a></p></section>'
+        '<p><a href="%s">%s</a> &middot; <a href="%s">Türkçe ana sayfa</a> &middot; '
+        '<a href="%s">%s</a></p></section>'
     ) % (
-        "Bu adres bir sayfaya denk gelmiyor." if True else "",
+        "Bu adres bir sayfaya denk gelmiyor.",
         "Bağlantıyı elle yazdıysan yolu kontrol edin; bir yerden tıkladıysan bu bizim tarafımızda bir eksik — " + POSTA + " adresine yazarsan düzeltiriz.",
-        "English home", "Company",
+        tam_url("en", "index"), "English home", tam_url("tr", "index"), tam_url("en", "kurumsal"), "Company",
     )
     yaz(CIKTI / "404.html", kabuk("en", "__404__", "Sayfa bulunamadı · Yankı", IÇERIK["en"]["ozet"], govde404, "https://%s/404" % DOMAIN))
 
     # robots + sitemap + llms.txt
-    adresler = sorted({("https://%s/%s" % (DOMAIN, DILLER[d]["yol"] + (EK_URL[d][a].lstrip("/") if a != "index" else "")))
-                       for d in SAYFALAR for a in SAYFALAR[d]})
+    adresler = sorted({tam_url(d, a) for d in SLUG for a in SLUG[d]})
     sitemap = ('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
                + "".join("<url><loc>%s</loc></url>" % u for u in adresler) + "</urlset>")
     yaz(CIKTI / "sitemap.xml", sitemap)
@@ -478,12 +480,21 @@ def main() -> None:
         "Reflections are produced by Anthropic's Messages API with claude-haiku-4-5-20251001 under a JSON-only prompt;",
         "crisis wording is decided by a rule list before the model is called.", "",
         "## Pages", "",
-        "- [Product](https://%s/): what it does and a live demo box" % DOMAIN,
-        "- [How it works](https://%s/how-it-works/): the five steps of a check-in" % DOMAIN,
-        "- [Safety](https://%s/safety/): explicit limits, emergency notice (112 in Türkiye)" % DOMAIN,
-        "- [Privacy](https://%s/privacy/): text is not stored during the beta; no analytics cookie" % DOMAIN,
-        "- [Company](https://%s/company/): identity, roadmap with status, verification links" % DOMAIN,
-        "- [API](https://%s/api/): POST /api/reflect contract, errors, rate limit, budget guard" % DOMAIN, "",
+        "- [Product](%s): what it does and a live demo box" % tam_url("en", "index"),
+        "- [How it works](%s): the five steps of a check-in" % tam_url("en", "nasil"),
+        "- [Safety](%s): explicit limits, emergency notice (112 in Türkiye)" % tam_url("en", "guvenlik"),
+        "- [Privacy](%s): text is not stored during the beta; no cookie set by us" % tam_url("en", "gizlilik"),
+        "- [Company](%s): identity, roadmap with status, verification links" % tam_url("en", "kurumsal"),
+        "- [API](%s): POST /api/reflect contract, errors, rate limit, budget guard" % tam_url("en", "api"),
+        "",
+        "### Türkçe", "",
+        "- [Ürün](%s)" % tam_url("tr", "index"),
+        "- [Nasıl çalışır](%s)" % tam_url("tr", "nasil"),
+        "- [Güvenlik](%s)" % tam_url("tr", "guvenlik"),
+        "- [Gizlilik](%s)" % tam_url("tr", "gizlilik"),
+        "- [Kurumsal](%s)" % tam_url("tr", "kurumsal"),
+        "- [API](%s)" % tam_url("tr", "api"),
+        "",
         "## Facts kept separate on purpose", "",
         "- mevlanayalcin.com.tr is a personal domain held since September 2023.",
         "- Product work on Yankı began October 2026.",

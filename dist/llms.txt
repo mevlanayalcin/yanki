@@ -11,9 +11,18 @@ crisis wording is decided by a rule list before the model is called.
 - [Product](https://mevlanayalcin.com.tr/): what it does and a live demo box
 - [How it works](https://mevlanayalcin.com.tr/how-it-works/): the five steps of a check-in
 - [Safety](https://mevlanayalcin.com.tr/safety/): explicit limits, emergency notice (112 in Türkiye)
-- [Privacy](https://mevlanayalcin.com.tr/privacy/): text is not stored during the beta; no analytics cookie
+- [Privacy](https://mevlanayalcin.com.tr/privacy/): text is not stored during the beta; no cookie set by us
 - [Company](https://mevlanayalcin.com.tr/company/): identity, roadmap with status, verification links
 - [API](https://mevlanayalcin.com.tr/api/): POST /api/reflect contract, errors, rate limit, budget guard
+
+### Türkçe
+
+- [Ürün](https://mevlanayalcin.com.tr/tr/)
+- [Nasıl çalışır](https://mevlanayalcin.com.tr/tr/nasil/)
+- [Güvenlik](https://mevlanayalcin.com.tr/tr/guvenlik/)
+- [Gizlilik](https://mevlanayalcin.com.tr/tr/gizlilik/)
+- [Kurumsal](https://mevlanayalcin.com.tr/tr/kurumsal/)
+- [API](https://mevlanayalcin.com.tr/tr/api/)
 
 ## Facts kept separate on purpose
 
