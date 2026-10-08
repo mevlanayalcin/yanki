@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mevlanayalcin.com.tr/sitemap.xml

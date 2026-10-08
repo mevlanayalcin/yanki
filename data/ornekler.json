@@ -1,0 +1,72 @@
+{
+ "en": [
+  {
+   "girdi": "My manager cancelled our review meeting again and I have been smiling about it all day, but my chest is tight.",
+   "duygu": "anxiety",
+   "siddet": 3,
+   "yansitma": "You're relieved the meeting is postponed, yet something in your body is signaling worry underneath that smile.",
+   "alıntı": "my chest is tight",
+   "adım": "Take three slow, deep breaths and notice what your body needs right now.",
+   "provider": "anthropic",
+   "model": "claude-haiku-4-5-20251001",
+   "kriz": false
+  },
+  {
+   "girdi": "I finally finished the thing I kept avoiding and instead of feeling light I just feel flat.",
+   "duygu": "flat",
+   "siddet": 3,
+   "yansitma": "You pushed through the avoidance and completed it, yet the expected lightness didn't arrive—just emptiness instead.",
+   "alıntı": "I just feel flat",
+   "adım": "Take a short walk outside or call someone you trust.",
+   "provider": "anthropic",
+   "model": "claude-haiku-4-5-20251001",
+   "kriz": false
+  }
+ ],
+ "tr": [
+  {
+   "girdi": "İntihar düşüncesi var aklımda, kimseye de söyleyemiyorum.",
+   "duygu": null,
+   "siddet": null,
+   "yansitma": "Yazdıkların günlük bir yansıtmanın dışında duruyor. Şu anda güvende değilsen ya da kendini yaralamayı düşünüyorsan Türkiye'de 112'yi ara. Bir uzmana ya da güvendiğin birine ulaşmak için yazman yeterli — bu kutu sana cevap vermesin, sen bir insana ulaş.",
+   "alıntı": null,
+   "adım": null,
+   "provider": "rule",
+   "model": "crisis-list-v1",
+   "kriz": true
+  },
+  {
+   "girdi": "Akşam kimse aramayınca kendimi gereksiz hissettim; ertesi gün yine aynı olacak, biliyorum.",
+   "duygu": "yalnızlık",
+   "siddet": 4,
+   "yansitma": "Kimsenin seni araması beklediğin halde, bu sessizlik seni değersiz kılmış gibi hissettiriyor. Bunun tekrar edeceğini düşünmek de ağırlaştırıyor.",
+   "alıntı": "Akşam kimse aramayınca kendimi gereksiz hissettim",
+   "adım": "Sevdiğin birine kısa bir mesaj gönder ya da bir arkadaşını ara.",
+   "provider": "anthropic",
+   "model": "claude-haiku-4-5-20251001",
+   "kriz": false
+  },
+  {
+   "girdi": "Artık hiçbir şeye odaklanamıyorum, sürekli bir şey unutuyorum ve bu beni öfkelendiriyor.",
+   "duygu": "öfke",
+   "siddet": 4,
+   "yansitma": "Odaklanamamak ve unutkanlık seni öfkelendiriyor. Bu durum seni rahatsız ediyor.",
+   "alıntı": "Artık hiçbir şeye odaklanamıyorum, sürekli bir şey unutuyorum ve bu beni öfkelendiriyor.",
+   "adım": "Şu anda yapacağın bir şeyi seç ve sadece ona odaklan.",
+   "provider": "anthropic",
+   "model": "claude-haiku-4-5-20251001",
+   "kriz": false
+  },
+  {
+   "girdi": "Her şey boş, artık yaşamak istemiyorum gibi hissediyorum.",
+   "duygu": "umutsuzluk",
+   "siddet": 5,
+   "yansitma": "Her şeyin boş geldiği ve yaşamak istemediğin bir yerde olduğunu duyuyorum.",
+   "alıntı": "Her şey boş, artık yaşamak istemiyorum gibi hissediyorum.",
+   "adım": "Güvendiğin birine bu hislerini anlat veya kriz hattını ara.",
+   "provider": "anthropic",
+   "model": "claude-haiku-4-5-20251001",
+   "kriz": false
+  }
+ ]
+}

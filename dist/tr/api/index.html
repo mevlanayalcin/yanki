@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>API · Yankı</title>
+<meta name="description" content="Şimdilik tek açık uç: bu sayfadaki deneme kutusunun çağırdığınla aynı uç. Hız sınırına ve günlük bütçe korumasına bağlı; altyapı değil, örnek bir bütünleştirme olarak bak." />
+<link rel="canonical" href="https://mevlanayalcin.com.tr/tr/tr/api/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="API · Yankı" />
+<meta property="og:description" content="Şimdilik tek açık uç: bu sayfadaki deneme kutusunun çağırdığınla aynı uç. Hız sınırına ve günlük bütçe korumasına bağlı; altyapı değil, örnek bir bütünleştirme olarak bak." />
+<meta property="og:url" content="https://mevlanayalcin.com.tr/tr/tr/api/" />
+<meta property="og:site_name" content="Yankı" />
+<meta name="twitter:card" content="summary" />
+<link href="/assets/site.css" rel="stylesheet" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://mevlanayalcin.com.tr/#org","name":"Yankı","url":"https://mevlanayalcin.com.tr/","email":"merhaba@mevlanayalcin.com.tr","description":"Yankı kendi cümlelerini sana geri yansıtır, duyduğunu düşündüğü duyguyu adlandırır ve önündeki bir saat için tek bir somut adım önerir. O bir eşlikçidir, terapi değildir; senin koymadığın bir duyguyu uydurmaz.","founder":{"@type":"Person","name":"Mevlana Yalçın"},"numberOfEmployees":{"@type":"QuantitativeValue","value":1},"address":{"@type":"PostalAddress","addressLocality":"Ankara","addressCountry":"TR"},"codeRepository":"https://github.com/mevlanayalcin/yanki"},{"@type":"SoftwareApplication","name":"Yankı","url":"https://mevlanayalcin.com.tr/tr/tr/api/","applicationCategory":"LifestyleApplication","operatingSystem":"Web","inLanguage":["en","tr"],"description":"Yankı kendi cümlelerini sana geri yansıtır, duyduğunu düşündüğü duyguyu adlandırır ve önündeki bir saat için tek bir somut adım önerir. O bir eşlikçidir, terapi değildir; senin koymadığın bir duyguyu uydurmaz.","publisher":{"@id":"https://mevlanayalcin.com.tr/#org"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}]}</script>
+</head><body>
+<header class="ust">
+  <a class="kul" href="/tr/">Yankı<span class="nokta">.</span></a>
+  <nav class="menu" id="menu"><a href="/tr/">Ürün</a>
+      <a href="/tr/nasil/">Nasıl çalışır</a>
+      <a href="/tr/guvenlik/">Güvenlik</a>
+      <a href="/tr/gizlilik/">Gizlilik</a>
+      <a href="/tr/api/" class="aktif">API</a>
+      <a href="/tr/kurumsal/">Kurumsal</a>
+      <a class="dil" href="/">English</a></nav>
+  <button class="menudugme" id="menudugme" aria-expanded="false" aria-controls="menu">Menu</button>
+</header>
+<main><section class="ku"><h1>API</h1><p>Şimdilik tek açık uç: bu sayfadaki deneme kutusunun çağırdığınla aynı uç. Hız sınırına ve günlük bütçe korumasına bağlı; altyapı değil, örnek bir bütünleştirme olarak bak.</p><table class="sozlesme"><tr><th>Method</th><td>POST</td></tr><tr><th>Path</th><td>/api/reflect</td></tr><tr><th>Request</th><td><code>{&quot;text&quot;: string, &quot;lang&quot;: &quot;en&quot;|&quot;tr&quot;}</code> — 8–600 characters</td></tr><tr><th>Response</th><td><code>{duygu, siddet, yansitma, alinti, adim, disclaimer, provider, model, cache}</code></td></tr><tr><th>Errors</th><td><code>bad_request</code> 400 · <code>too_long</code> 413 · <code>busy</code> 429 · <code>daily_budget</code> 503 · <code>upstream</code> 502</td></tr><tr><th>Rate limit</th><td>6 requests / 60 s per IP</td></tr><tr><th>Budget</th><td>A daily payment-equivalent cap stops the endpoint before the balance runs out</td></tr><tr><th>Crisis wording</th><td>Handled by a rule list before the model call; the answer is replaced by helpline text</td></tr></table></section><section class="ku"><h2>Kaydedilmiş üç cevap</h2><p class="alt">/api/reflect ucunun birebir cevapları; sayfa için yeniden yazılmadı. İstek metni her cevabın üstünde gösterilir.</p><div class="ornekler"><article class="ornek"><p class="soru">“İntihar düşüncesi var aklımda, kimseye de söyleyemiyorum.”</p><dl><dt>Duygu</dt><dd>— <span class="siddet"></span></dd><dt>Yansıtma</dt><dd>Yazdıkların günlük bir yansıtmanın dışında duruyor. Şu anda güvende değilsen ya da kendini yaralamayı düşünüyorsan Türkiye&#x27;de 112&#x27;yi ara. Bir uzmana ya da güvendiğin birine ulaşmak için yazman yeterli — bu kutu sana cevap vermesin, sen bir insana ulaş.</dd><dt>Alıntı</dt><dd class="ali0">—</dd><dt>Adım</dt><dd>—</dd></dl><p class="motor">rule · crisis-list-v1</p></article><article class="ornek"><p class="soru">“Akşam kimse aramayınca kendimi gereksiz hissettim; ertesi gün yine aynı olacak, biliyorum.”</p><dl><dt>Duygu</dt><dd>yalnızlık <span class="siddet">4</span></dd><dt>Yansıtma</dt><dd>Kimsenin seni araması beklediğin halde, bu sessizlik seni değersiz kılmış gibi hissettiriyor. Bunun tekrar edeceğini düşünmek de ağırlaştırıyor.</dd><dt>Alıntı</dt><dd class="ali0">Akşam kimse aramayınca kendimi gereksiz hissettim</dd><dt>Adım</dt><dd>Sevdiğin birine kısa bir mesaj gönder ya da bir arkadaşını ara.</dd></dl><p class="motor">anthropic · claude-haiku-4-5-20251001</p></article><article class="ornek"><p class="soru">“Artık hiçbir şeye odaklanamıyorum, sürekli bir şey unutuyorum ve bu beni öfkelendiriyor.”</p><dl><dt>Duygu</dt><dd>öfke <span class="siddet">4</span></dd><dt>Yansıtma</dt><dd>Odaklanamamak ve unutkanlık seni öfkelendiriyor. Bu durum seni rahatsız ediyor.</dd><dt>Alıntı</dt><dd class="ali0">Artık hiçbir şeye odaklanamıyorum, sürekli bir şey unutuyorum ve bu beni öfkelendiriyor.</dd><dt>Adım</dt><dd>Şu anda yapacağın bir şeyi seç ve sadece ona odaklan.</dd></dl><p class="motor">anthropic · claude-haiku-4-5-20251001</p></article><article class="ornek"><p class="soru">“Her şey boş, artık yaşamak istemiyorum gibi hissediyorum.”</p><dl><dt>Duygu</dt><dd>umutsuzluk <span class="siddet">5</span></dd><dt>Yansıtma</dt><dd>Her şeyin boş geldiği ve yaşamak istemediğin bir yerde olduğunu duyuyorum.</dd><dt>Alıntı</dt><dd class="ali0">Her şey boş, artık yaşamak istemiyorum gibi hissediyorum.</dd><dt>Adım</dt><dd>Güvendiğin birine bu hislerini anlat veya kriz hattını ara.</dd></dl><p class="motor">anthropic · claude-haiku-4-5-20251001</p></article></div></section></main>
+<footer class="alt">
+  <p class="altbilgi">Yankı · Ankara, Türkiye · 2026 · işletme adı, tescilli tüzel kişilik değil · merhaba@mevlanayalcin.com.tr</p>
+  <p class="altlinkler"><a href="https://github.com/mevlanayalcin/yanki">GitHub</a> · <a href="/llms.txt">llms.txt</a> · <a href="/tr/api/">API</a> · <a href="/tr/company/">Company</a></p>
+</footer>
+<script src="/assets/nav.js" defer></script>
+
+</body></html>

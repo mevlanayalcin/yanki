@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>How a check-in is built · Yankı</title>
+<meta name="description" content="How a check-in is built — You write what happened and how it landed. Yankı returns the feeling it hears, the sentence of yours that carries it, and one concrete step you can take in the next hour." />
+<link rel="canonical" href="https://mevlanayalcin.com.tr/how-it-works/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="How a check-in is built · Yankı" />
+<meta property="og:description" content="How a check-in is built — You write what happened and how it landed. Yankı returns the feeling it hears, the sentence of yours that carries it, and one concrete step you can take in the next hour." />
+<meta property="og:url" content="https://mevlanayalcin.com.tr/how-it-works/" />
+<meta property="og:site_name" content="Yankı" />
+<meta name="twitter:card" content="summary" />
+<link href="/assets/site.css" rel="stylesheet" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://mevlanayalcin.com.tr/#org","name":"Yankı","url":"https://mevlanayalcin.com.tr/","email":"merhaba@mevlanayalcin.com.tr","description":"Yankı mirrors your own words back, names what you appear to feel, and offers one small next step. It is a companion, not therapy, and it never invents a feeling you did not put there.","founder":{"@type":"Person","name":"Mevlana Yalçın"},"numberOfEmployees":{"@type":"QuantitativeValue","value":1},"address":{"@type":"PostalAddress","addressLocality":"Ankara","addressCountry":"TR"},"codeRepository":"https://github.com/mevlanayalcin/yanki"},{"@type":"SoftwareApplication","name":"Yankı","url":"https://mevlanayalcin.com.tr/how-it-works/","applicationCategory":"LifestyleApplication","operatingSystem":"Web","inLanguage":["en","tr"],"description":"Yankı mirrors your own words back, names what you appear to feel, and offers one small next step. It is a companion, not therapy, and it never invents a feeling you did not put there.","publisher":{"@id":"https://mevlanayalcin.com.tr/#org"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}]}</script>
+</head><body>
+<header class="ust">
+  <a class="kul" href="/">Yankı<span class="nokta">.</span></a>
+  <nav class="menu" id="menu"><a href="/">Product</a>
+      <a href="/how-it-works/" class="aktif">How it works</a>
+      <a href="/safety/">Safety</a>
+      <a href="/privacy/">Privacy</a>
+      <a href="/api/">API</a>
+      <a href="/company/">Company</a>
+      <a class="dil" href="/tr">Türkçe</a></nav>
+  <button class="menudugme" id="menudugme" aria-expanded="false" aria-controls="menu">Menu</button>
+</header>
+<main><section class="ku"><h1>How a check-in is built</h1><ol class="adimlar"><li><h3>You write freely</h3><p>One text box. No forms, no mood emoji grid, no streaks to keep you hostage.</p></li><li><h3>It names the feeling</h3><p>A language model reads the passage and proposes one feeling label with an intensity, plus the alternative it considered and rejected.</p></li><li><h3>It quotes you</h3><p>The reflection carries your own sentence, unchanged. If it cannot find one, it says so instead of guessing.</p></li><li><h3>One small step</h3><p>A single, doable action for the next hour: four minutes of breathing, a two-line journal prompt, a walk, a message to a person.</p></li><li><h3>Crisis words are handled by rules</h3><p>A fixed word list runs before the model. If it hits, Yankı stops reflecting and shows human contacts. The model does not get to decide this.</p></li></ol><p class="motorNotu">Reflections are produced through Anthropic&#x27;s Messages API with claude-haiku-4-5-20251001 under a reflection-constrained prompt that must return JSON. The output is schema-checked server side; a malformed answer is discarded rather than shown. Crisis wording is decided by a rule list before the model is called.</p></section></main>
+<footer class="alt">
+  <p class="altbilgi">Yankı · Ankara, Türkiye · 2026 · operating name, not a registered legal entity · merhaba@mevlanayalcin.com.tr</p>
+  <p class="altlinkler"><a href="https://github.com/mevlanayalcin/yanki">GitHub</a> · <a href="/llms.txt">llms.txt</a> · <a href="/api/">API</a> · <a href="/company/">Company</a></p>
+</footer>
+<script src="/assets/nav.js" defer></script>
+
+</body></html>

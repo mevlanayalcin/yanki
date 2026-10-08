@@ -1,0 +1,28 @@
+name = "yanki"
+compatibility_date = "2026-10-06"
+main = "cloudflare/worker.mjs"
+workers_dev = true
+observability = { enabled = true }
+
+[[durable_objects.bindings]]
+name = "SINIRLAYICI"
+class_name = "Sinirlayici"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Sinirlayici"]
+
+# Bedir AI ile ayni KV alanini paylasir; anahtarlar yanki: onekiyle ayrilir.
+[[kv_namespaces]]
+binding = "WAITLIST"
+id = "64a65c721f1944bd864b290958390293"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "404-page"
+
+# mevlanayalcin.com.tr zone'unun isim sunuculari Cloudflare'a devredildikten sonra acilir:
+# [[routes]]
+# pattern = "mevlanayalcin.com.tr"
+# custom_domain = true

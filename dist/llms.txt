@@ -1,0 +1,23 @@
+# Yankı
+
+> Yankı mirrors your own words back, names what you appear to feel, and offers one small next step. It is a companion, not therapy, and it never invents a feeling you did not put there.
+
+Yankı is an emotional check-in companion, not therapy, not a diagnosis, not a medical device.
+Reflections are produced by Anthropic's Messages API with claude-haiku-4-5-20251001 under a JSON-only prompt;
+crisis wording is decided by a rule list before the model is called.
+
+## Pages
+
+- [Product](https://mevlanayalcin.com.tr/): what it does and a live demo box
+- [How it works](https://mevlanayalcin.com.tr/how-it-works/): the five steps of a check-in
+- [Safety](https://mevlanayalcin.com.tr/safety/): explicit limits, emergency notice (112 in Türkiye)
+- [Privacy](https://mevlanayalcin.com.tr/privacy/): text is not stored during the beta; no analytics cookie
+- [Company](https://mevlanayalcin.com.tr/company/): identity, roadmap with status, verification links
+- [API](https://mevlanayalcin.com.tr/api/): POST /api/reflect contract, errors, rate limit, budget guard
+
+## Facts kept separate on purpose
+
+- mevlanayalcin.com.tr is a personal domain held since September 2023.
+- Product work on Yankı began October 2026.
+- One person, bootstrapped, Ankara. No registered legal entity, no funding raised, no customers yet.
+- Waitlist only: sign-up at the site; deletion by email to merhaba@mevlanayalcin.com.tr.
