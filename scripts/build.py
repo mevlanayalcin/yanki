@@ -17,7 +17,7 @@ POSTA = 'info@' + DOMAIN
 DEPO = 'https://github.com/mevlanayalcin/yanki'
 PROFIL = 'https://github.com/mevlanayalcin'
 LINKEDIN = 'https://www.linkedin.com/in/mevlanayalcin'
-CONTENT_UPDATED = '2026-10-08'
+CONTENT_UPDATED = '2026-11-16'
 SLUG = {
     'en': {'home': '/', 'services': '/services/', 'products': '/products/', 'approach': '/process/', 'company': '/company/', 'privacy': '/privacy/', 'yanki': '/work/yanki/', 'contact': '/contact/', 'terms': '/terms/', 'audit': '/work/inference-audit/', 'notes': '/notes/'},
     'tr': {'home': '/tr/', 'services': '/tr/hizmetler/', 'products': '/tr/urunler/', 'approach': '/tr/surec/', 'company': '/tr/kurumsal/', 'privacy': '/tr/gizlilik/', 'yanki': '/tr/calismalar/yanki/', 'contact': '/tr/iletisim/', 'terms': '/tr/sartlar/', 'audit': '/tr/calismalar/inference-denetimi/', 'notes': '/tr/notlar/'},
@@ -33,7 +33,9 @@ def link(text, href, cls='text-link', external=False):
 
 
 def brand(lang):
-    return f'<a class="brand" href="{SLUG[lang]["home"]}" aria-label="Mevlana Yalçın — {"Ana sayfa" if lang == "tr" else "Home"}">{MARK}<span class="brand-name">Mevlana Yalçın<small>AI consulting</small></span></a>'
+    home_label = 'Ana sayfa' if lang == 'tr' else 'Home'
+    sub = 'AI mühendisliği' if lang == 'tr' else 'AI engineering'
+    return f'<a class="brand" href="{SLUG[lang]["home"]}" aria-label="Mevlana Yalçın — {home_label}">{MARK}<span class="brand-name">Mevlana Yalçın<small>{sub}</small></span></a>'
 
 
 def heading(eyebrow, title, body='', compact=False):
@@ -53,18 +55,32 @@ def service_list(lang):
     return '<div class="service-list">' + ''.join(rows) + '</div>'
 
 
-def product_art(lang):
+def product_art(lang, slug='yanki'):
+    if slug == 'yanki-engine':
+        cap = 'ÇOK DİLLİ ALINTI VE RAG KANITI' if lang == 'tr' else 'QUOTE & RAG SPAN PROVENANCE'
+        return (
+            '<div class="product-art engine" aria-hidden="true">'
+            '<span class="artifact-label">YANKI 0.2.0 / MIT PYTHON</span>'
+            '<div class="engine-preview">'
+            '<div class="engine-bar"><span>src/yanki/grounding.py</span><b>24/24 PASS</b></div>'
+            '<code>verify_quote_grounding(src, quote)</code>'
+            '<code>-&gt; span [start_char, end_char)</code>'
+            f'<small>{cap}</small>'
+            '</div></div>'
+        )
     line = 'Bugün, kendi kelimelerinle.' if lang == 'tr' else 'Today, in your own words.'
-    small = 'CLAUDE İLE YANSITMA' if lang == 'tr' else 'REFLECTION WITH CLAUDE'
-    return f'<div class="product-art yanki" aria-hidden="true"><span class="artifact-label">YANKI / CLAUDE API</span><div class="note-preview"><div class="preview-brand">yankı<i></i></div><p>{line}</p><div class="note-line"></div><small>{small}</small></div></div>'
+    small = 'CLAUDE + ALINTI DOĞRULAMA' if lang == 'tr' else 'CLAUDE + QUOTE GROUNDING'
+    return f'<div class="product-art yanki" aria-hidden="true"><span class="artifact-label">YANKI / EDGE SANDBOX</span><div class="note-preview"><div class="preview-brand">yankı<i></i></div><p>{line}</p><div class="note-line"></div><small>{small}</small></div></div>'
 
 
 def products(lang):
     items = []
     for p in COPY[lang]['products']['items']:
         href = SLUG[lang]['yanki'] if p['slug'] == 'yanki' else p['href']
-        items.append(f'<article class="product-card">{product_art(lang)}<div class="product-copy"><div class="product-topline"><span class="product-name">{E(p["name"])}</span><span class="product-status">{E(p["status"])}</span></div><h3>{E(p["title"])}</h3><p>{E(p["body"])}</p>{link(p["cta"],href,external=href.startswith("https:"))}<span class="product-category">{E(p["category"])}</span></div></article>')
-    return '<div class="product-grid one">' + ''.join(items) + '</div>'
+        art = product_art(lang, p['slug'])
+        items.append(f'<article class="product-card">{art}<div class="product-copy"><div class="product-topline"><span class="product-name">{E(p["name"])}</span><span class="product-status">{E(p["status"])}</span></div><h3>{E(p["title"])}</h3><p>{E(p["body"])}</p>{link(p["cta"],href,external=href.startswith("https:"))}<span class="product-category">{E(p["category"])}</span></div></article>')
+    grid_cls = 'product-grid' if len(items) > 1 else 'product-grid one'
+    return f'<div class="{grid_cls}">' + ''.join(items) + '</div>'
 
 
 def claude_evidence(lang):
@@ -108,12 +124,78 @@ def page_hero(lang, key, title=None, body=None):
     return f'<section class="page-hero wrap"><p class="eyebrow">{E(c["eyebrow"])}</p><h1>{E(title or c["title"])}</h1><p class="lede">{E(body if body is not None else c.get("body",c.get("intro","")))}</p></section>'
 
 
+QUICKSTART_SNIPPET = """git clone https://github.com/mevlanayalcin/yanki.git && cd yanki
+pip install -e ".[dev]"
+
+# 1. Verify a Turkish quote span with U+0130 (İ/i) offset preservation
+python3 -m yanki.cli verify \\
+  --source "İSTANBUL ekibiyle yoğun bir toplantı yaptık ama sonuç içime sindi." \\
+  --quote "istanbul ekibiyle yoğun bir toplantı yaptık"
+
+# 2. Run the 24-case TR/EN deterministic benchmark suite (offline CI gate)
+python3 -m yanki.eval --offline --strict-thresholds"""
+
+
+def yanki_engine_section(lang):
+    ye = COPY[lang]['yanki_engine']
+    mods = ''.join(
+        f'<article class="step engine-card"><span class="step-number">{E(m["num"])} · <code>{E(m["name"])}</code></span>'
+        f'<h3>{E(m["title"])}</h3><p>{E(m["body"])}</p></article>'
+        for m in ye['modules']
+    )
+    h1, h2, h3, h4 = ye['bench_headers']
+    thead = f'<thead><tr><th scope="col">{E(h1)}</th><th scope="col">{E(h2)}</th><th scope="col">{E(h3)}</th><th scope="col">{E(h4)}</th></tr></thead>'
+    tbody_rows = ''.join(
+        f'<tr><th scope="row">{E(r[0])}</th><td>{E(r[1])}</td><td><code>{E(r[2])}</code></td><td><span class="badge-pass">{E(r[3])}</span></td></tr>'
+        for r in ye['bench_rows']
+    )
+    table_vars = f'--label-2: "{E(h2, quote=True)}"; --label-3: "{E(h3, quote=True)}"; --label-4: "{E(h4, quote=True)}";'
+    snippet = E(QUICKSTART_SNIPPET)
+    hpc_url = DEPO + '/tree/main/hpc'
+    return (
+        f'<section class="section engine-section" id="engine"><div class="wrap">'
+        f'{heading(ye["eyebrow"], ye["title"], ye["body"])}'
+        f'<div class="engine-grid">{mods}</div>'
+        f'<figure class="code-figure">'
+        f'<figcaption id="quickstart-caption">{E(ye["code_caption"])}</figcaption>'
+        f'<pre role="region" aria-labelledby="quickstart-caption" tabindex="0"><code class="language-bash">{snippet}</code></pre>'
+        f'</figure>'
+        f'</div></section>'
+        f'<section class="section wrap" id="benchmarks">'
+        f'{heading(ye["bench_eyebrow"], ye["bench_title"], ye["bench_body"], compact=True)}'
+        f'<div tabindex="0" role="region" aria-labelledby="bench-caption" class="table-wrapper">'
+        f'<table class="bench-table" style=\'{table_vars}\'>'
+        f'<caption id="bench-caption">{E(ye["bench_caption"])}</caption>'
+        f'{thead}<tbody>{tbody_rows}</tbody></table></div>'
+        f'<div class="actions">{link(ye["repo_cta"], DEPO, "button", external=True)}{link(ye["ci_cta"], hpc_url, external=True)}</div>'
+        f'</section>'
+    )
+
+
 def yanki(lang):
     c = COPY[lang]['yanki']; tr = lang == 'tr'
     features = ''.join(f'<div class="feature"><h3>{E(f["title"])}</h3><p>{E(f["body"])}</p></div>' for f in c['features'])
-    tech_title = 'Claude entegrasyonu ve API' if tr else 'Claude integration & API'
-    tech_body = ('Yansıtma için Anthropic Messages API ve claude-haiku-4-5-20251001 kullanılır. Yanıt biçimi ve alıntılar uygulamada kontrol edilir. Kriz sözcükleri için model çağrısından önce ayrı bir kural kontrolü yapılır. Bu kontrol tüm acil durumları tespit edemez.' if tr else 'Reflections use the Anthropic Messages API and claude-haiku-4-5-20251001. The application checks the response format and quotes. A separate rule checks for crisis words before calling the model. This check cannot identify every emergency.')
-    return page_hero(lang,'yanki') + f'''<section class="page-content wrap"><div class="yanki-layout"><div class="product-description"><h2>{E(c['cta'])}</h2>{features}<p class="tech-note">{E(c['safety'])}</p></div><div class="reflection-box"><div class="product-topline"><span class="product-name">yankı</span><span class="product-status">{E(c['status'])}</span></div><label for="girdi">{E(c['input_label'])}</label><textarea id="girdi" minlength="8" maxlength="600" rows="5" placeholder="{E(c['input_placeholder'],quote=True)}" aria-describedby="reflection-privacy"></textarea><button class="button" id="yansit" type="button">{E(c['input_button'])}{ARROW}</button><p class="form-status" id="durum" role="status" aria-live="polite"></p><div class="reflection-result" id="sonuc" aria-live="polite" hidden></div><p class="form-note" id="reflection-privacy">{E(c['privacy_note'])} <a href="{SLUG[lang]['privacy']}">{E(COPY[lang]['nav'].get('privacy',COPY[lang]['footer']['privacy']))} ↗</a></p></div></div><details class="technical" id="api"><summary>{tech_title}</summary><div class="technical-content"><p>{tech_body}</p><p><code>POST /api/reflect</code> · <code>{{"text": "…", "lang": "en|tr"}}</code> · 8–600 {'karakter' if tr else 'characters'}</p><p>{'İstek ve günlük kullanım sınırları uygulanır. Hizmet kullanılamıyorsa arayüz hata gösterir.' if tr else 'Request and daily usage limits apply. The interface shows an error when the service is unavailable.'}</p><p> · <a href="/api/health">{'Servis bilgisi' if tr else 'Service metadata'}</a></p></div></details></section>'''
+    tech_title = 'Edge API sözleşmesi ve çalışma zamanı' if tr else 'Edge API contract & runtime metadata'
+    tech_body = ('Canlı uç ortamı Cloudflare Workers üzerinde çalışır; Anthropic Messages API (claude-haiku-4-5-20251001) çağrısından önce deterministik kriz kuralını çalıştırır ve dönen JSON içindeki alıntıyı kaynak metinle karakter düzeyinde doğrular.' if tr else 'The live edge sandbox runs on Cloudflare Workers, executing a deterministic crisis rule check before calling the Anthropic Messages API (claude-haiku-4-5-20251001) and verifying the returned JSON quote span against your input.')
+    char_word = 'karakter' if tr else 'characters'
+    limit_note = 'İstek ve günlük kullanım sınırları uygulanır. Hizmet kullanılamıyorsa arayüz hata gösterir.' if tr else 'Request and daily usage limits apply. The interface shows an error when the service is unavailable.'
+    health_label = 'Servis bilgisi (/api/health)' if tr else 'Service metadata (/api/health)'
+    privacy_label = E(COPY[lang]['nav'].get('privacy', COPY[lang]['footer']['privacy']))
+    sandbox = (
+        f'<section class="page-content wrap"><div class="yanki-layout">'
+        f'<div class="product-description"><h2>{E(c["cta"])}</h2>{features}<p class="tech-note">{E(c["safety"])}</p></div>'
+        f'<div class="reflection-box"><div class="product-topline"><span class="product-name">yankı</span><span class="product-status">{E(c["status"])}</span></div>'
+        f'<label for="girdi">{E(c["input_label"])}</label>'
+        f'<textarea id="girdi" minlength="8" maxlength="600" rows="5" placeholder="{E(c["input_placeholder"],quote=True)}" aria-describedby="reflection-privacy"></textarea>'
+        f'<button class="button" id="yansit" type="button">{E(c["input_button"])}{ARROW}</button>'
+        f'<p class="form-status" id="durum" role="status" aria-live="polite"></p>'
+        f'<div class="reflection-result" id="sonuc" aria-live="polite" hidden></div>'
+        f'<p class="form-note" id="reflection-privacy">{E(c["privacy_note"])} <a href="{SLUG[lang]["privacy"]}">{privacy_label} ↗</a></p></div></div>'
+        f'<details class="technical" id="api"><summary>{tech_title}</summary><div class="technical-content"><p>{tech_body}</p>'
+        f'<p><code>POST /api/reflect</code> · <code>{{"text": "…", "lang": "en|tr"}}</code> · 8–600 {char_word}</p>'
+        f'<p>{limit_note} · <a href="/api/health">{health_label}</a></p></div></details></section>'
+    )
+    return page_hero(lang, 'yanki') + sandbox + yanki_engine_section(lang)
 
 
 def content(lang, page):
@@ -184,15 +266,16 @@ def breadcrumbs(lang,page):
 
 def structured_data(lang,page,canonical):
     root='https://'+DOMAIN
-    founder={'@type':'Person','@id':root+'/#founder','name':'Mevlana Yalçın','jobTitle':'Founder and software engineer','url':root+SLUG[lang]['company'],'sameAs':[PROFIL,LINKEDIN]}
-    service={'@type':'ProfessionalService','@id':root+'/#business','name':'Mevlana Yalçın','url':root,'description':COPY[lang]['meta']['description'],'email':POSTA,'founder':{'@id':root+'/#founder'},'address':{'@type':'PostalAddress','addressLocality':'Ankara','addressCountry':'TR'},'contactPoint':{'@type':'ContactPoint','email':POSTA,'url':root+SLUG[lang]['contact'],'availableLanguage':['en','tr'],'contactType':'business enquiries'},'knowsAbout':['Claude API integration','AI consulting','Product engineering','AI evaluation']}
+    founder={'@type':'Person','@id':root+'/#founder','name':'Mevlana Yalçın','jobTitle':'Founder and AI systems engineer','url':root+SLUG[lang]['company'],'sameAs':[PROFIL,LINKEDIN]}
+    service={'@type':'ProfessionalService','@id':root+'/#business','name':'Mevlana Yalçın','url':root,'description':COPY[lang]['meta']['description'],'email':POSTA,'founder':{'@id':root+'/#founder'},'address':{'@type':'PostalAddress','addressLocality':'Ankara','addressCountry':'TR'},'contactPoint':{'@type':'ContactPoint','email':POSTA,'url':root+SLUG[lang]['contact'],'availableLanguage':['en','tr'],'contactType':'business enquiries'},'knowsAbout':['Deterministic LLM output verification','Multilingual RAG citation grounding','Claude API integration','vLLM and GPU inference evaluation','AI consulting']}
     graph=[founder,service,{'@type':'WebSite','@id':root+'/#website','name':'Mevlana Yalçın','url':root,'publisher':{'@id':root+'/#business'}}]
     if page in SLUG[lang]:
         graph.append({'@type':'WebPage','@id':canonical+'#page','url':canonical,'name':page_name(lang,page),'inLanguage':lang,'isPartOf':{'@id':root+'/#website'},'dateModified':CONTENT_UPDATED})
     if page not in ('home','404'):
         graph.append({'@type':'BreadcrumbList','itemListElement':[{'@type':'ListItem','position':1,'name':page_name(lang,'home'),'item':root+SLUG[lang]['home']},{'@type':'ListItem','position':2,'name':page_name(lang,page),'item':canonical}]})
-    if page in ('products','yanki'):
-        graph.append({'@type':'SoftwareApplication','@id':root+'/work/yanki/#product','name':'Yankı','url':root+SLUG[lang]['yanki'],'applicationCategory':'LifestyleApplication','operatingSystem':'Web','description':COPY[lang]['products']['body'],'creator':{'@id':root+'/#founder'},'isAccessibleForFree':True})
+    if page in ('home','products','yanki'):
+        graph.append({'@type':'SoftwareApplication','@id':root+'/work/yanki/#product','name':'Yankı','softwareVersion':'0.2.0','url':root+SLUG[lang]['yanki'],'applicationCategory':'DeveloperApplication','operatingSystem':'Linux, macOS, Web','license':'https://opensource.org/licenses/MIT','codeRepository':DEPO,'description':COPY[lang]['products']['body'],'creator':{'@id':root+'/#founder'},'isAccessibleForFree':True})
+        graph.append({'@type':'SoftwareSourceCode','@id':root+'/work/yanki/#engine','name':'yanki','version':'0.2.0','codeRepository':DEPO,'license':'https://opensource.org/licenses/MIT','programmingLanguage':['Python','JavaScript'],'author':{'@id':root+'/#founder'},'description':COPY[lang]['yanki_engine']['body']})
     return {'@context':'https://schema.org','@graph':graph}
 
 def shell(lang, page, version):
@@ -226,7 +309,18 @@ def main():
     urls = sorted('https://'+DOMAIN+u for routes in SLUG.values() for u in routes.values())
     (CIKTI/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{u}</loc><lastmod>{tarih}</lastmod></url>' for u in urls)+'</urlset>')
     (CIKTI/'robots.txt').write_text(f'User-agent: *\nAllow: /\nSitemap: https://{DOMAIN}/sitemap.xml\n')
-    llms = '# Mevlana Yalçın — AI consulting with Claude\n\n'+COPY['en']['meta']['description']+'\n\n## Identity\n'+COPY['en']['company']['body']+'\n'+COPY['en']['company']['legal']+'\n'+COPY['en']['company']['dates']+'\n\n## Product\n- Yankı: live beta for personal reflection. Uses Anthropic Messages API. Not therapy or medical advice.\n\n## Pages\n'
+    llms = (
+        '# Mevlana Yalçın — Yankı Verification Engine & AI Engineering\n\n'
+        + COPY['en']['meta']['description']
+        + '\n\n## Identity\n'
+        + COPY['en']['company']['body'] + '\n'
+        + COPY['en']['company']['legal'] + '\n'
+        + COPY['en']['company']['dates']
+        + '\n\n## Open-Source Software & Live Product\n'
+        '- **Yankı Verification Engine (`yanki` v0.2.0, MIT License)**: Deterministic multilingual LLM quote-grounding (`verify_quote_grounding`), index-preserving Turkish `İ/ı` Unicode offset mapping (`yanki.normalize`), multi-source RAG citation verification (`verify_multi_source_citations`), pre-inference crisis guardrails (`yanki.guardrails`), `<think>`-aware strict JSON schema validation (`yanki.schema`), and unified `vLLM`/`SGLang`/OpenAI/Anthropic benchmark harness (`24/24` passing in CI).\n'
+        f'- **Repository**: {DEPO}\n'
+        f'- **Live Zero-Retention Edge Sandbox**: https://{DOMAIN}/work/yanki/ (`POST /api/reflect`, `GET /api/health`)\n\n## Pages\n'
+    )
     for lang in SLUG:
         for page,path in SLUG[lang].items(): llms += f'- [{lang}: {page}](https://{DOMAIN}{path})\n'
     (CIKTI/'llms.txt').write_text(llms+'\nContact: '+POSTA+'\n')
@@ -236,6 +330,10 @@ def main():
     shutil.copyfile(CIKTI/'og.png',CIKTI/'assets'/'og.png')
     shutil.copyfile(CIKTI/'apple-touch-icon.png',CIKTI/'assets'/'apple-touch-icon.png')
     (CIKTI/'favicon.svg').write_text('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="6" fill="#222a27"/><path d="M7 37V11h7l10 14 10-14h7v26h-7V24L24 38 14 24v13Z" fill="#f4f3ee"/><path d="M34 33h7v7h-7z" fill="#d95535"/></svg>')
+    if (KOK / 'funding.json').is_file():
+        shutil.copyfile(KOK / 'funding.json', CIKTI / 'funding.json')
+    if (KOK / '.well-known').is_dir():
+        shutil.copytree(KOK / '.well-known', CIKTI / '.well-known', dirs_exist_ok=True)
     print(f'Built {len(urls)} bilingual pages, local assets, sitemap and 404.')
 
 if __name__ == '__main__': main()
