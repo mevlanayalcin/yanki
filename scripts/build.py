@@ -37,7 +37,8 @@ def brand(lang):
 
 
 def heading(eyebrow, title, body='', compact=False):
-    return f'<div class="section-top{" compact" if compact else ""}"><p class="eyebrow">{E(eyebrow)}</p><div><h2>{E(title)}</h2>{f"<p class=\"section-intro\">{E(body)}</p>" if body else ""}</div></div>'
+    intro = f'<p class="section-intro">{E(body)}</p>' if body else ''
+    return f'<div class="section-top{" compact" if compact else ""}"><p class="eyebrow">{E(eyebrow)}</p><div><h2>{E(title)}</h2>{intro}</div></div>'
 
 
 def service_list(lang):
