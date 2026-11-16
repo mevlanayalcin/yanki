@@ -1,0 +1,65 @@
+{
+  "$schema": "https://fundingjson.org/schema/v1.1.0.json",
+  "version": "v1.1.0",
+  "entity": {
+    "type": "organisation",
+    "role": "owner",
+    "name": "Yankı (Mevlana Yalçın)",
+    "email": "info@mevlanayalcin.com.tr",
+    "phone": "+905336783640",
+    "description": "Independent open-source AI verification and reliability R&D lab in Ankara, Turkey, maintaining Yankı: a deterministic multilingual quote-grounding, pre-inference safety gating, and RAG citation verification engine.",
+    "webpageUrl": {
+      "url": "https://github.com/mevlanayalcin/yanki",
+      "wellKnown": "https://raw.githubusercontent.com/mevlanayalcin/yanki/main/.well-known/funding-manifest-urls"
+    }
+  },
+  "projects": [
+    {
+      "guid": "yanki",
+      "name": "Yankı",
+      "description": "MIT-licensed Python engine and HPC evaluation suite for deterministic multilingual (Turkish/English) LLM quote-grounding, character-offset span provenance, hallucination rejection, strict JSON schema contracts, and pre-inference crisis guardrails across vLLM, SGLang, OpenAI, and Anthropic backends.",
+      "webpageUrl": {
+        "url": "https://github.com/mevlanayalcin/yanki",
+        "wellKnown": "https://raw.githubusercontent.com/mevlanayalcin/yanki/main/.well-known/funding-manifest-urls"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/mevlanayalcin/yanki",
+        "wellKnown": "https://raw.githubusercontent.com/mevlanayalcin/yanki/main/.well-known/funding-manifest-urls"
+      },
+      "licenses": ["spdx:MIT"],
+      "tags": ["ai", "machine-learning", "natural-language-processing", "python", "security", "developer-tools", "testing"]
+    }
+  ],
+  "funding": {
+    "channels": [
+      {
+        "guid": "corporate-bank",
+        "type": "bank",
+        "address": "info@mevlanayalcin.com.tr (IBAN / Wire details provided on invoice for Mevlana Yalçın, Tax ID: 9340337890, Ankara, Turkey)",
+        "description": "Direct bank transfer / wire to registered Turkish business entity (Mevlana Yalçın, VKN 9340337890)."
+      }
+    ],
+    "plans": [
+      {
+        "guid": "gpu-benchmark-infra",
+        "status": "active",
+        "name": "Multilingual Grounding Benchmark & GPU Evaluation Infrastructure",
+        "description": "Covers open-weight 30B-70B vLLM evaluation runs, multilingual hallucination-rejection dataset curation, and continuous CI verification.",
+        "amount": 15000,
+        "currency": "USD",
+        "frequency": "yearly",
+        "channels": ["corporate-bank"]
+      },
+      {
+        "guid": "core-maintainer-grant",
+        "status": "active",
+        "name": "Core Open-Source Maintainer & Formal Verification R&D",
+        "description": "Supports full-time open-source development of deterministic citation-grounding, Unicode provenance verification, and pre-inference safety guardrails.",
+        "amount": 25000,
+        "currency": "USD",
+        "frequency": "one-time",
+        "channels": ["corporate-bank"]
+      }
+    ]
+  }
+}
