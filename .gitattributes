@@ -1,0 +1,3 @@
+dist/** linguist-generated=true
+site/assets/*.woff2 linguist-vendored=true
+site/brand/*.png linguist-vendored=true

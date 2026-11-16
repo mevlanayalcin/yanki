@@ -1,0 +1,21 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/pytorch:24.09-py3
+
+%labels
+    Author Mevlana Yalcin <info@mevlanayalcin.com.tr>
+    Project Yanki — Multilingual Quote-Grounding & vLLM Evaluation Container
+
+%files
+    . /opt/yanki
+
+%post
+    python3 -m pip install --no-cache-dir --upgrade pip
+    python3 -m pip install --no-cache-dir "vllm>=0.6.3" /opt/yanki[dev]
+
+%environment
+    export LC_ALL=C.UTF-8
+    export PYTHONIOENCODING=utf-8
+    export HF_HOME=${HF_HOME:-/tmp/hf_cache}
+
+%runscript
+    exec python3 -m yanki.cli "$@"

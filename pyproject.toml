@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yanki"
+version = "0.2.0"
+description = "Deterministic quote-grounding, pre-inference safety gating, and schema-enforced multilingual (TR/EN) LLM verification & evaluation engine."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [
+  { name = "Mevlana Yalçın", email = "info@mevlanayalcin.com.tr" }
+]
+keywords = ["llm", "citation-verification", "quote-grounding", "turkish-nlp", "vllm", "evaluation", "guardrails"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+]
+gpu = [
+  "vllm>=0.6.0",
+  "torch>=2.4.0",
+  "transformers>=4.45.0",
+]
+
+[project.scripts]
+yanki = "yanki.cli:main"
+yanki-eval = "yanki.eval:main"
+
+[project.urls]
+Homepage = "https://mevlanayalcin.com.tr/work/yanki/"
+Repository = "https://github.com/mevlanayalcin/yanki"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
