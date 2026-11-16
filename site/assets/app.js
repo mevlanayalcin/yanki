@@ -1,106 +1,174 @@
-// Deneme kutusu + bekleme listesi. Hepsi ayni ucleri kullanir; yanit ne ise o gosterilir.
+// Etkilesimli dogrulama izi (trace) sekmeleri + ozel onizleme (waitlist) formu.
+// Canli model cagrisi yapilmaz; tum ornekler gercek deterministik motor ciktilaridir.
 (function () {
   var tr = location.pathname.indexOf("/tr/") === 0;
-  var ETIKET = tr
-    ? { duygu: "Duygu", siddet: "Şiddet", yansitma: "Yansıtma", alinti: "Senin cümlen", adim: "Adım",
-        kriz: "Kriz sözcüğü geçti", bekliyoruz: "Listedesin — adres kaydedildi.", hatali: "Geçersiz adres.",
-        ulasilamadi: "Yankı şu anda yanıt üretemedi. Lütfen biraz sonra yeniden deneyin.",
-        beklemetuşucu: "Adres kaydedilemedi, birazdan yine dene." }
-    : { duygu: "Feeling", siddet: "Intensity", yansitma: "Reflection", alinti: "Your words", adim: "Next step",
-        kriz: "A crisis word appeared", bekliyoruz: "You are on the list — address saved.", hatali: "Invalid address.",
-        ulasilamadi: "Yankı couldn't complete this reflection. Please try again later.",
-        beklemetuşucu: "Could not save the address, try again shortly." };
+  var MSG = tr
+    ? {
+        bekliyoruz: "Özel önizleme listesine eklendiniz — erişim açıldığında e-posta ile bilgilendireceğiz.",
+        zatenKayitli: "Bu e-posta adresi özel önizleme listesinde zaten kayıtlı.",
+        hatali: "Lütfen geçerli bir kurumsal veya kişisel e-posta adresi girin.",
+        gonderiliyor: "Kaydediliyor…",
+        hata: "Kayıt şu anda tamamlanamadı. Lütfen info@mevlanayalcin.com.tr adresine yazın.",
+      }
+    : {
+        bekliyoruz: "Added to the private preview queue — we will reach out as design-partner slots open.",
+        zatenKayitli: "This email address is already registered on the private preview list.",
+        hatali: "Please enter a valid work or personal email address.",
+        gonderiliyor: "Registering…",
+        hata: "Could not register right now. Please write directly to info@mevlanayalcin.com.tr.",
+      };
 
-  function metin(e, s) { e.textContent = s; }
+  // 1. Sekmeli dogrulama ornekleri (tabs + hidden="until-found" + beforematch)
+  var tabGroups = document.querySelectorAll(".trace-tabs");
+  var hasNativeFocusGroup =
+    typeof HTMLElement !== "undefined" && Object.prototype.hasOwnProperty.call(HTMLElement.prototype, "focusGroup");
 
-  function satir(dl, baslik, icerik) {
-    var dt = document.createElement("dt"); dt.textContent = baslik;
-    var dd = document.createElement("dd"); dd.textContent = icerik;
-    dl.appendChild(dt); dl.appendChild(dd);
-  }
+  tabGroups.forEach(function (group) {
+    var tablist = group.querySelector('[role="tablist"]');
+    if (!tablist) return;
+    var tabs = Array.prototype.slice.call(tablist.querySelectorAll('[role="tab"]'));
+    var panels = Array.prototype.slice.call(group.querySelectorAll('[role="tabpanel"]'));
+    if (!tabs.length || tabs.length !== panels.length) return;
 
-  var dugme = document.getElementById("yansit");
-  var girdi = document.getElementById("girdi");
-  var durum = document.getElementById("durum");
-  var sonuc = document.getElementById("sonuc");
+    function selectTab(nextTab, moveFocus) {
+      tabs.forEach(function (tab, idx) {
+        var active = tab === nextTab;
+        tab.setAttribute("aria-selected", active ? "true" : "false");
+        if (active) {
+          tab.setAttribute("focusgroupstart", "");
+          tab.removeAttribute("tabindex");
+        } else {
+          tab.removeAttribute("focusgroupstart");
+          if (!hasNativeFocusGroup) tab.setAttribute("tabindex", "-1");
+        }
+        var panel = panels[idx];
+        if (active) {
+          panel.hidden = false;
+          panel.removeAttribute("hidden");
+          panel.setAttribute("tabindex", "0");
+        } else {
+          panel.hidden = "until-found";
+          panel.removeAttribute("tabindex");
+        }
+      });
+      try {
+        nextTab.scrollIntoView({ block: "nearest", inline: "nearest", container: "nearest" });
+      } catch (_) {
+        nextTab.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
+      if (moveFocus) nextTab.focus();
+    }
 
-  if (dugme && girdi && sonuc) {
-    var beklenen = 0;
-    dugme.addEventListener("click", function () {
-      // Yerel ad "metin" olamaz: yukaridaki metin() yardimcisini golgeler ve
-      // ilk durum yaziminda string'i fonksiyon gibi cagirdigi icin patlar.
-      var yazi = girdi.value.trim();
-      sonuc.hidden = true;
-      sonuc.innerHTML = "";
-      if (yazi.length < 8) { metin(durum, tr ? "En az bir cümle yaz (8 karakter)." : "Write at least a sentence (8 characters)."); return; }
-      var kuyruk = ++beklenen;
-      dugme.disabled = true;
-      metin(durum, tr ? "Düşünüyor…" : "Thinking…");
-      fetch("/api/reflect", {
-        method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ text: yazi, lang: tr ? "tr" : "en" })
-      })
-        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
-        .then(function (sonuc_) {
-          if (kuyruk !== beklenen) return;
-          durum.textContent = "";
-          sonuc.hidden = false;
-          var j = sonuc_.j || {};
-          if (!sonuc_.ok || j.error) {
-            var h = document.createElement("p"); h.className = "motorNotu";
-            h.textContent = ETIKET.ulasilamadi;
-            sonuc.appendChild(h);
-            return;
+    tabs.forEach(function (tab, idx) {
+      if (tab.getAttribute("aria-selected") !== "true" && !hasNativeFocusGroup) {
+        tab.setAttribute("tabindex", "-1");
+      }
+      tab.addEventListener("click", function () {
+        selectTab(tab, false);
+      });
+      tab.addEventListener("focus", function () {
+        if (tab.getAttribute("aria-selected") !== "true") {
+          selectTab(tab, false);
+        }
+      });
+      if (!hasNativeFocusGroup) {
+        tab.addEventListener("keydown", function (e) {
+          var targetIdx = -1;
+          if (e.key === "ArrowRight") targetIdx = (idx + 1) % tabs.length;
+          else if (e.key === "ArrowLeft") targetIdx = (idx - 1 + tabs.length) % tabs.length;
+          else if (e.key === "Home") targetIdx = 0;
+          else if (e.key === "End") targetIdx = tabs.length - 1;
+          if (targetIdx >= 0) {
+            e.preventDefault();
+            selectTab(tabs[targetIdx], true);
           }
-          if (j.kriz) {
-            var k = document.createElement("p"); k.className = "kriz";
-            k.textContent = j.yansitma || ETIKET.kriz;
-            sonuc.appendChild(k);
-          }
-          var dl = document.createElement("dl");
-          if (j.duygu) { satir(dl, ETIKET.duygu, j.duygu + (j.siddet ? " · " + j.siddet + "/5" : "")); }
-          if (j.yansitma && !j.kriz) { satir(dl, ETIKET.yansitma, j.yansitma); }
-          if (j.alinti) { satir(dl, ETIKET.alinti, "“" + j.alinti + "”"); }
-          if (j.adim) { satir(dl, ETIKET.adim, j.adim); }
-          sonuc.appendChild(dl);
-          var dip = document.createElement("p"); dip.className = "motor";
-          dip.textContent = (j.provider || "") + " · " + (j.model || "") + (j.cache && j.cache.okuma ? " · cache read" : "");
-          sonuc.appendChild(dip);
-          if (j.disclaimer) {
-            var d = document.createElement("p"); d.className = "motor"; d.textContent = j.disclaimer;
-            sonuc.appendChild(d);
-          }
-        })
-        .catch(function () {
-          if (kuyruk !== beklenen) return;
-          durum.textContent = ETIKET.ulasilamadi;
-        })
-        .then(function () { dugme.disabled = false; });
+        });
+      }
     });
-  }
 
+    group.addEventListener("beforematch", function (e) {
+      var matchedPanel = e.target.closest ? e.target.closest('[role="tabpanel"]') : null;
+      if (!matchedPanel) return;
+      var matchedIdx = panels.indexOf(matchedPanel);
+      if (matchedIdx >= 0) selectTab(tabs[matchedIdx], false);
+    });
+  });
+
+  // 2. Ozel onizleme (early access waitlist) formu
   var form = document.getElementById("bekleme");
   if (form) {
-    form.addEventListener("submit", function (olay) {
-      olay.preventDefault();
-      var yazit = document.getElementById("beklemeyanit");
-      var adres = (form.querySelector("input[name=email]") || {}).value || "";
-      if (adres.indexOf("@") < 1) { metin(yazit, ETIKET.hatali); return; }
-      fetch("/api/waitlist", {
-        method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: adres, lang: tr ? "tr" : "en", via: "site" })
-      })
-        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
-        .then(function (sonuc_) {
-          if (sonuc_.ok) {
-            metin(yazit, ETIKET.bekliyoruz);
-            form.querySelector("input[name=email]").disabled = true;
-            form.querySelector("button").disabled = true;
-          } else {
-            metin(yazit, ETIKET.beklemetuşucu + (sonuc_.j && sonuc_.j.error ? " (" + sonuc_.j.error + ")" : ""));
-          }
+    var input = form.querySelector('input[name="email"]');
+    var statusEl = document.getElementById("beklemeyanit");
+    var submitBtn = form.querySelector('button[type="submit"]');
+    var touched = false;
+
+    function validEmail(val) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val) && val.length <= 180;
+    }
+
+    if (input && statusEl) {
+      input.addEventListener("input", function () {
+        if (input.getAttribute("aria-invalid") === "true" && validEmail(input.value.trim())) {
+          input.removeAttribute("aria-invalid");
+          statusEl.textContent = "";
+          statusEl.className = "form-status";
+        }
+      });
+
+      input.addEventListener("blur", function () {
+        var v = input.value.trim();
+        if (!v) return;
+        touched = true;
+        if (!validEmail(v)) {
+          input.setAttribute("aria-invalid", "true");
+          statusEl.textContent = MSG.hatali;
+          statusEl.className = "form-status error";
+        }
+      });
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var adres = input.value.trim().toLowerCase();
+        if (!validEmail(adres)) {
+          touched = true;
+          input.setAttribute("aria-invalid", "true");
+          statusEl.textContent = MSG.hatali;
+          statusEl.className = "form-status error";
+          input.focus();
+          return;
+        }
+        input.removeAttribute("aria-invalid");
+        if (submitBtn) submitBtn.disabled = true;
+        statusEl.textContent = MSG.gonderiliyor;
+        statusEl.className = "form-status";
+
+        fetch("/api/waitlist", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email: adres, lang: tr ? "tr" : "en", via: "private-preview" }),
         })
-        .catch(function () { metin(yazit, ETIKET.beklemetuşucu); });
-    });
+          .then(function (r) {
+            return r.json().then(function (j) {
+              return { ok: r.ok, j: j };
+            });
+          })
+          .then(function (res) {
+            if (res.ok && res.j) {
+              statusEl.textContent = res.j.kayitli ? MSG.zatenKayitli : MSG.bekliyoruz;
+              statusEl.className = "form-status ok";
+              input.disabled = true;
+            } else {
+              if (submitBtn) submitBtn.disabled = false;
+              statusEl.textContent = MSG.hata;
+              statusEl.className = "form-status error";
+            }
+          })
+          .catch(function () {
+            if (submitBtn) submitBtn.disabled = false;
+            statusEl.textContent = MSG.hata;
+            statusEl.className = "form-status error";
+          });
+      });
+    }
   }
 })();

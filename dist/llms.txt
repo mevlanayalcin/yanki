@@ -1,16 +1,17 @@
-# Mevlana Yalçın — Yankı Verification Engine & AI Engineering
+# Mevlana Yalçın — Yankı AI Verification Platform & Systems Engineering
 
-AI product studio and consultancy in Ankara. Creators of Yankı (MIT): deterministic multilingual LLM quote-grounding, RAG citation verification, and live Claude reflection.
+AI verification infrastructure and systems engineering studio in Ankara. Creators of Yankı: deterministic multilingual quote-grounding, multi-source RAG citation provenance, and pre-inference safety.
 
 ## Identity
-Mevlana Yalçın is a founder-led AI product engineering studio and consultancy based in Ankara, Türkiye. We build Yankı—an open-source (MIT) multilingual quote-grounding and RAG citation verification engine paired with a live edge reflection sandbox—and help engineering teams integrate, verify and benchmark LLM systems.
-Mevlana Yalçın operates this AI consulting and product development business. Enquiries and engagement terms are handled directly by the founder.
-The business was registered in November 2023. The founder has held mevlanayalcin.com.tr since September 2023. Product and verification engine work on Yankı began in October 2026.
+Mevlana Yalçın is a founder-led AI systems engineering studio and consultancy based in Ankara, Türkiye. We develop the Yankı verification platform and advise engineering teams on grounded RAG architectures, sovereign GPU inference, and rigorous LLM evaluation.
+Mevlana Yalçın operates this independent software engineering and AI consulting practice. Commercial scopes and private-preview partnerships are handled directly by the founder.
+The business was registered in November 2023, and mevlanayalcin.com.tr has been held since September 2023. Engineering on the Yankı verification platform began in October 2026.
 
-## Open-Source Software & Live Product
-- **Yankı Verification Engine (`yanki` v0.2.0, MIT License)**: Deterministic multilingual LLM quote-grounding (`verify_quote_grounding`), index-preserving Turkish `İ/ı` Unicode offset mapping (`yanki.normalize`), multi-source RAG citation verification (`verify_multi_source_citations`), pre-inference crisis guardrails (`yanki.guardrails`), `<think>`-aware strict JSON schema validation (`yanki.schema`), and unified `vLLM`/`SGLang`/OpenAI/Anthropic benchmark harness (`24/24` passing in CI).
+## Platform & Open-Source Engine
+- **Yankı Cloud Gateway (In Active Development · Private Preview)**: Managed model-agnostic verification proxy, immutable citation audit logs, and policy console. Interactive public execution is disabled during private preview; curated production traces and early-access registration are available on `/work/yanki/`.
+- **Yankı Core Engine (`yanki` v0.2.0, MIT License)**: Dependency-free Python 3.11+ package (`src/yanki/`) providing index-preserving Turkish `İ/ı` Unicode offset mapping (`yanki.normalize`), single- & multi-source RAG citation verification (`verify_quote_grounding`, `verify_multi_source_citations`), pre-inference safety short-circuits (`yanki.guardrails`), `<think>`-aware strict JSON validation (`yanki.schema`), and unified `vLLM`/`SGLang`/OpenAI-compatible GPU benchmark harness (`24/24` passing in GitHub Actions CI).
 - **Repository**: https://github.com/mevlanayalcin/yanki
-- **Live Zero-Retention Edge Sandbox**: https://mevlanayalcin.com.tr/work/yanki/ (`POST /api/reflect`, `GET /api/health`)
+- **Product & Trace Examples**: https://mevlanayalcin.com.tr/work/yanki/
 
 ## Pages
 - [en: home](https://mevlanayalcin.com.tr/)

@@ -17,7 +17,7 @@
     {
       "guid": "yanki",
       "name": "Yankı",
-      "description": "MIT-licensed Python engine and HPC evaluation suite for deterministic multilingual (Turkish/English) LLM quote-grounding, character-offset span provenance, hallucination rejection, strict JSON schema contracts, and pre-inference crisis guardrails across vLLM, SGLang, OpenAI, and Anthropic backends.",
+      "description": "MIT-licensed Python engine and HPC evaluation suite for deterministic multilingual (Turkish/English) LLM quote-grounding, character-offset span provenance, hallucination rejection, strict JSON schema contracts, and pre-inference safety guardrails across vLLM, SGLang, and OpenAI-compatible HTTP backends.",
       "webpageUrl": {
         "url": "https://github.com/mevlanayalcin/yanki",
         "wellKnown": "https://raw.githubusercontent.com/mevlanayalcin/yanki/main/.well-known/funding-manifest-urls"
