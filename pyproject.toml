@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "yanki"
-version = "0.2.0"
-description = "Deterministic quote-grounding, pre-inference safety gating, and schema-enforced multilingual (TR/EN) LLM verification & evaluation engine."
+version = "0.3.0"
+description = "Multilingual (TR/EN) SFT & DPO quote-grounding alignment fine-tuning, pre-inference safety gating, and deterministic LLM citation verification engine."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 authors = [
   { name = "Mevlana Yalçın", email = "info@mevlanayalcin.com.tr" }
 ]
-keywords = ["llm", "citation-verification", "quote-grounding", "turkish-nlp", "vllm", "evaluation", "guardrails"]
+keywords = ["llm", "fine-tuning", "dpo", "sft", "citation-verification", "quote-grounding", "turkish-nlp", "fsdp", "guardrails"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
@@ -30,15 +30,24 @@ dependencies = []
 dev = [
   "pytest>=8.0",
 ]
+train = [
+  "torch>=2.4.0",
+  "transformers>=4.46.0",
+  "peft>=0.13.0",
+  "accelerate>=1.1.0",
+]
 gpu = [
   "vllm>=0.6.0",
   "torch>=2.4.0",
-  "transformers>=4.45.0",
+  "transformers>=4.46.0",
+  "peft>=0.13.0",
 ]
 
 [project.scripts]
 yanki = "yanki.cli:main"
 yanki-eval = "yanki.eval:main"
+yanki-finetune = "yanki.finetune:main"
+yanki-train = "yanki.train:main"
 
 [project.urls]
 Homepage = "https://mevlanayalcin.com.tr/work/yanki/"

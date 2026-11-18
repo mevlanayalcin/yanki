@@ -1,0 +1,35 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/pytorch:25.09-py3
+
+# JSC / JUPITER Booster (NVIDIA GH200 Grace Hopper, linux/arm64 aarch64)
+# Build on a JUPITER / JSC login or compute node (aarch64) using node-local RAM/tmp,
+# NEVER on GPFS/IME shared storage (per JSC SDLAML PyTorch Apptainer guide):
+#   export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-/dev/shm}
+#   export APPTAINER_CACHEDIR=${APPTAINER_CACHEDIR:-/tmp/${USER}_apptainer_cache}
+#   apptainer build yanki_jupiter_aarch64.sif hpc/apptainer/yanki_jupiter_aarch64.def
+
+%labels
+    Author Mevlana Yalcin <info@mevlanayalcin.com.tr>
+    Architecture aarch64-grace-hopper-gh200
+    Project Yanki — Multi-GPU FSDP SFT/DPO Alignment Fine-Tuning & Quote-Grounding Verifier
+
+%files
+    . /opt/yanki
+
+%post
+    uname -m
+    python3 -m pip install --no-cache-dir --upgrade pip
+    python3 -m pip install --no-cache-dir \
+        "transformers>=4.46.0" \
+        "peft>=0.13.0" \
+        "accelerate>=1.1.0" \
+        /opt/yanki[dev]
+
+%environment
+    export LC_ALL=C.UTF-8
+    export PYTHONIOENCODING=utf-8
+    export HF_HOME=${HF_HOME:-/tmp/hf_cache}
+    export TOKENIZERS_PARALLELISM=false
+
+%runscript
+    exec python3 -m yanki.cli "$@"

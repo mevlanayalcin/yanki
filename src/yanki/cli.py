@@ -7,13 +7,15 @@ import json
 import sys
 
 from .eval import main as eval_main
+from .finetune import main as finetune_main
 from .grounding import find_verbatim_span
 from .guardrails import check_crisis_gate
 from .providers import GroundedPipeline, HTTPInferenceBackend, ProviderConfig
+from .train import main as train_main
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="yanki", description="Yankı quote-grounding & safety CLI.")
+    parser = argparse.ArgumentParser(prog="yanki", description="Yankı quote-grounding, alignment fine-tuning & safety CLI.")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_verify = sub.add_parser("verify", help="Verify a candidate quote against a source passage.")
@@ -32,10 +34,16 @@ def main(argv: list[str] | None = None) -> int:
     p_infer.add_argument("--model", default=None)
 
     sub.add_parser("eval", help="Delegate to yanki.eval benchmark runner (pass args after 'eval').")
+    sub.add_parser("build-dataset", help="Build verified SFT & DPO preference JSONL files (yanki.finetune).")
+    sub.add_parser("train", help="Launch or dry-run multi-GPU SFT/DPO alignment training (yanki.train).")
 
     raw_args = list(sys.argv[1:] if argv is None else argv)
     if raw_args and raw_args[0] == "eval":
         return eval_main(raw_args[1:])
+    if raw_args and raw_args[0] == "build-dataset":
+        return finetune_main(raw_args[1:])
+    if raw_args and raw_args[0] == "train":
+        return train_main(raw_args[1:])
 
     args = parser.parse_args(raw_args)
 

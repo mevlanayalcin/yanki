@@ -12,14 +12,21 @@ from yanki import (
     GroundedPipeline,
     ProviderConfig,
     ProviderResponse,
+    TrainingConfig,
+    build_alignment_examples,
     build_normalized_view,
     check_crisis_gate,
+    compute_reference_free_dpo_loss_scalar,
+    corrupt_verbatim_quote,
+    export_alignment_jsonl,
     extract_json_object,
     find_verbatim_span,
+    load_jsonl_records,
     normalize_tr,
     validate_grounded_synthesis,
     validate_reflection,
     verify_cited_claims,
+    verify_preference_pair,
     verify_quote_grounding,
 )
 from yanki.cli import main as cli_main
@@ -263,3 +270,69 @@ def test_provider_config_from_env_defaults(monkeypatch: pytest.MonkeyPatch) -> N
 
     cfg_anth = ProviderConfig.from_env("anthropic")
     assert cfg_anth.kind == "anthropic"
+
+
+def test_corrupt_verbatim_quote_produces_ungrounded_hard_negative() -> None:
+    src_tr = "Akşam kimse aramayınca kendimi gereksiz hissettim; ertesi gün yine aynı olacak."
+    exact_tr = "Akşam kimse aramayınca kendimi gereksiz hissettim"
+    corrupted_tr = corrupt_verbatim_quote(exact_tr, src_tr, lang="tr")
+    assert corrupted_tr != exact_tr
+    assert find_verbatim_span(src_tr, corrupted_tr).grounded is False
+
+    src_en = "My manager cancelled our review meeting again and my chest is tight."
+    exact_en = "my chest is tight"
+    corrupted_en = corrupt_verbatim_quote(exact_en, src_en, lang="en")
+    assert corrupted_en != exact_en
+    assert find_verbatim_span(src_en, corrupted_en).grounded is False
+
+
+def test_build_and_export_sft_and_dpo_alignment_datasets(tmp_path: Path) -> None:
+    cases = load_suite(DEFAULT_SUITE)
+    sft_rows, dpo_rows = build_alignment_examples(cases)
+    assert len(sft_rows) >= 8
+    assert len(dpo_rows) >= 8
+
+    for sft in sft_rows:
+        assert sft.source_text[sft.start : sft.end] == sft.exact_quote
+
+    for pair in dpo_rows:
+        ok, reason = verify_preference_pair(pair)
+        assert ok is True, f"Failed DPO verification for {pair.id}: {reason}"
+
+    summary = export_alignment_jsonl(output_dir=tmp_path)
+    assert summary["sft_count"] >= 10
+    assert summary["dpo_count"] >= 10
+
+    sft_loaded = load_jsonl_records(Path(summary["sft_path"]), stage="sft")
+    dpo_loaded = load_jsonl_records(Path(summary["dpo_path"]), stage="dpo")
+    assert len(sft_loaded) == summary["sft_count"]
+    assert len(dpo_loaded) == summary["dpo_count"]
+
+
+def test_dpo_loss_scalar_and_cli_dry_run_trainer(tmp_path: Path) -> None:
+    # Preference margin > 0 should yield lower loss than inverted preference margin < 0
+    good_loss = compute_reference_free_dpo_loss_scalar(-0.8, -2.4, beta=0.2)
+    bad_loss = compute_reference_free_dpo_loss_scalar(-2.4, -0.8, beta=0.2)
+    assert good_loss < bad_loss
+
+    cfg = TrainingConfig(stage="dpo", max_seq_len=2048, lora_rank=32)
+    cfg.validate()
+    with pytest.raises(ValueError):
+        TrainingConfig(stage="invalid").validate()
+
+    rc_ds = cli_main(["build-dataset", "--output-dir", str(tmp_path)])
+    assert rc_ds == 0
+
+    rc_train = cli_main(
+        [
+            "train",
+            "--stage",
+            "dpo",
+            "--model",
+            "Qwen/Qwen2.5-32B-Instruct",
+            "--dataset",
+            str(tmp_path / "dpo_preferences.jsonl"),
+            "--dry-run",
+        ]
+    )
+    assert rc_train == 0

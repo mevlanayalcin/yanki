@@ -1,17 +1,17 @@
-# Yankı — Multilingual Quote-Grounding & Deterministic LLM Verification Engine
+# Yankı — Multilingual Quote-Grounding Alignment Fine-Tuning (SFT/DPO) & Deterministic LLM Verification Engine
 
 [![CI](https://github.com/mevlanayalcin/yanki/actions/workflows/ci.yml/badge.svg)](https://github.com/mevlanayalcin/yanki/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 
-**Yankı** is an open-source bilingual (`TR` / `EN`) LLM verification, pre-inference safety gating, and verbatim quote-grounding engine, accompanied by its live zero-retention Cloudflare Worker deployment ([mevlanayalcin.com.tr/work/yanki](https://mevlanayalcin.com.tr/work/yanki/)).
+**Yankı** is an open-source bilingual (`TR` / `EN`) post-training alignment pipeline (**distributed multi-GPU PyTorch FSDP LoRA SFT + DPO preference fine-tuning**), pre-inference safety gate, and verbatim quote-grounding verification engine, accompanied by its zero-retention edge deployment ([mevlanayalcin.com.tr/work/yanki](https://mevlanayalcin.com.tr/work/yanki/)).
 
-Rather than trusting language models to self-police safety boundaries or quote source documents faithfully, Yankı enforces deterministic pre- and post-inference invariants in code:
+Open-weight multilingual language models (`Qwen2.5-32B/72B`, `Llama-3.3-70B`, `DeepSeek-R1-Distill`, `Mistral`) frequently paraphrase, reorder words, or corrupt Turkish UTF-8 character spans (`İ` / `ı`) when asked to cite primary sources verbatim. Yankı combines **preference post-training on HPC GPU clusters** with **deterministic runtime verification**:
 
-1. **Turkish-Aware Offset-Preserving Normalization (`yanki.normalize`):** Standard Unicode lowercasing turns Turkish `İ` (`U+0130`) into a 2-codepoint sequence (`i\u0307`), corrupting character offsets when slicing back into UTF-8 texts. `build_normalized_view()` folds Turkish/Latin diacritics (`ğ, ü, ş, ı, İ, ö, ç`) while maintaining exact character provenance maps `[start, end)` into the original document.
-2. **Deterministic Verbatim Quote & Multi-Source Citation Verification (`yanki.grounding`):** Every quoted span emitted by an LLM (both single-passage reflections and multi-document RAG synthesis claims) is checked against the raw source text. Paraphrased or fabricated quotes are deterministically stripped or rejected, and verified spans are re-sliced directly from the original source characters.
-3. **Pre-Inference Lexical Safety Gate (`yanki.guardrails`):** High-risk crisis expressions in Turkish and English are intercepted *before* any model API or GPU server is called.
-4. **Zero-Fallback Schema Contracts & Multi-Provider Routing (`yanki.schema`, `yanki.providers`):** Supports local/cluster **OpenAI-compatible GPU servers (`vLLM`, `SGLang`, `NVIDIA NIM`, `Fireworks`)** alongside the **Anthropic Messages API** using Python's standard library HTTP stack (zero mandatory SDK bloat inside HPC containers). Malformed model outputs fail closed instead of emitting synthetic fallback prose.
+1. **Hard-Negative SFT & DPO Alignment Dataset Synthesis (`yanki.finetune`):** Automatically constructs supervised fine-tuning (`messages`) trajectories and Direct Preference Optimization (`prompt`, `chosen`, `rejected`) preference pairs where `chosen` carries character-verified UTF-8 spans and `rejected` injects realistic Turkish/English near-miss paraphrases, word-order swaps, and ungrounded citations.
+2. **Multi-GPU Distributed PyTorch FSDP LoRA + DPO Post-Training (`yanki.train`):** Native `torchrun` (`NCCL` / `RCCL`, `bfloat16`, `FSDP`, `PEFT LoRA`) SFT warmup and reference-free DPO fine-tuning loop built for EuroHPC supercomputers — including **JUPITER Booster (`NVIDIA GH200` `aarch64`, `Stage 2026 PyTorch 2.9.1`)**, **LUMI-G (`AMD Instinct MI250X` `ROCm`)**, and **`H100` / `H200` / `GB200`** clusters.
+3. **Turkish-Aware Offset-Preserving Normalization (`yanki.normalize`):** Standard Unicode lowercasing turns Turkish `İ` (`U+0130`) into a 2-codepoint sequence (`i\u0307`), corrupting character offsets when slicing back into UTF-8 texts. `build_normalized_view()` folds Turkish/Latin diacritics (`ğ, ü, ş, ı, İ, ö, ç`) while maintaining exact character provenance maps `[start, end)` into the original document.
+4. **Deterministic Verbatim Quote & Multi-Source Citation Verification (`yanki.grounding`, `yanki.guardrails`, `yanki.schema`):** Pre-inference lexical crisis gating intercepts high-risk `TR`/`EN` expressions before model execution, and post-inference verification deterministically strips any paraphrased or fabricated quote span.
 
 ---
 
@@ -19,31 +19,56 @@ Rather than trusting language models to self-police safety boundaries or quote s
 
 | Path | Description |
 |---|---|
-| `src/yanki/` | Core Python package: Turkish-aware offset normalizer, span/citation verifier, safety gate, schema contracts, `vLLM`/OpenAI/Anthropic client, CLI & benchmark runner |
+| `src/yanki/finetune.py` | Verified SFT & hard-negative DPO preference dataset builder (`sft_train.jsonl`, `dpo_preferences.jsonl`) |
+| `src/yanki/train.py` | Multi-GPU `torchrun` PyTorch (`FSDP` + `LoRA`, `bf16`) SFT & DPO post-training alignment runner |
+| `src/yanki/{normalize,grounding,guardrails,schema,providers,eval}.py` | Core Turkish-aware offset normalizer, span/citation verifier, safety gate, schema contracts, and post-training evaluator |
+| `hpc/apptainer/yanki_jupiter_aarch64.def` | `aarch64` (`linux/arm64`) Apptainer training container recipe for **JUPITER Booster (`GH200`)** (`APPTAINER_TMPDIR=/dev/shm`) |
+| `hpc/slurm/jupiter_gh200_finetune.sh` | Slurm `4x GH200` (`aarch64` / `Stage 2026 PyTorch 2.9.1`) distributed SFT + DPO fine-tuning & post-training validation job |
+| `hpc/slurm/lumi_rocm_finetune.sh` | Slurm `8x GCD` (`AMD Instinct MI250X` ROCm) distributed DPO fine-tuning job for **EuroHPC LUMI-G** |
+| `hpc/apptainer/yanki_vllm_cuda.def` & `hpc/slurm/berzelius_vllm_eval.sh` | Post-training `vLLM` checkpoint evaluation container and Slurm job for `x86_64` CUDA clusters |
 | `benchmarks/grounding_suite_tr_en.jsonl` | Bilingual (`TR` / `EN`) deterministic evaluation suite covering Turkish `İ/ı` offsets, paraphrase traps, multi-source RAG claims, and safety boundaries |
-| `hpc/apptainer/yanki_vllm_cuda.def` | Apptainer (`--nv`) container recipe (`PyTorch 24.09 + vLLM`) for GPU supercomputing clusters |
-| `hpc/slurm/berzelius_vllm_eval.sh` | Slurm batch job launching node-local tensor-parallel `vLLM` inference + `yanki.eval` |
-| `tests/test_yanki_engine.py` | Unit & integration test suite (including parity checks against `data/ornekler.json`) |
+| `tests/test_yanki_engine.py` | Unit & integration test suite covering SFT/DPO pair synthesis, DPO loss math, dry-run trainer validation, and grounding parity |
 | `cloudflare/worker.mjs` | Production Cloudflare Worker serving `/api/reflect`, `/api/waitlist`, and `/api/health` with Durable Object rate limiting |
-| `scripts/` & `site/` | Static bilingual product/documentation generator and live deployment health auditor (`denet.py`) |
 
 ---
 
-## Quickstart (Python Engine & Evaluation Suite)
+## Quickstart (Alignment Dataset, Fine-Tuning & Evaluation)
 
 ```bash
 python3 -m pip install -e ".[dev]"
 
-# Run unit and parity tests
+# 1. Run unit, SFT/DPO dataset, and parity tests
 pytest -v
 
-# Run the deterministic offline quote-grounding & safety benchmark
-python3 -m yanki.eval --offline --strict-thresholds
+# 2. Build verified bilingual SFT & hard-negative DPO preference JSONL datasets
+python3 -m yanki.finetune --output-dir artifacts/alignment_data
 
-# Verify a Turkish quote span from the CLI (recovers original UTF-8 slice & offsets)
-yanki verify \
-  --source "İstanbul'dan Ankara'ya döndüğümden beri hiçbir işe odaklanamıyorum." \
-  --quote "istanbul'dan ankara'ya dondugumden beri"
+# 3. Validate DPO training configuration & preference invariants (CPU dry-run)
+python3 -m yanki.train \
+  --stage dpo \
+  --model Qwen/Qwen2.5-32B-Instruct \
+  --dataset artifacts/alignment_data/dpo_preferences.jsonl \
+  --dry-run
+
+# 4. Run the deterministic offline quote-grounding & safety benchmark
+python3 -m yanki.eval --offline --strict-thresholds
+```
+
+### Multi-GPU SFT + DPO Fine-Tuning on EuroHPC (`JUPITER GH200 aarch64` & `LUMI-G`)
+
+On **JUPITER Booster (`NVIDIA GH200`, `aarch64`)**, build the ARM64 Apptainer image using node-local `/dev/shm` (never shared GPFS storage) or load `Stages/2026 PyTorch/2.9.1`, then submit the distributed `FSDP` LoRA SFT + DPO job:
+
+```bash
+export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-/dev/shm}
+apptainer build yanki_jupiter_aarch64.sif hpc/apptainer/yanki_jupiter_aarch64.def
+
+MODEL_ID="Qwen/Qwen2.5-32B-Instruct" sbatch hpc/slurm/jupiter_gh200_finetune.sh
+```
+
+On **EuroHPC LUMI-G (`AMD Instinct MI250X`, ROCm)**:
+
+```bash
+MODEL_ID="Qwen/Qwen2.5-32B-Instruct" sbatch hpc/slurm/lumi_rocm_finetune.sh
 ```
 
 ### Evaluating Open-Weight Models on `vLLM` / `SGLang` (CUDA / Slurm HPC)
